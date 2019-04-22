@@ -63,3 +63,22 @@ class BDDFormatDataset:
         if self.transform:
             image, _ = self.transform(image)
         return image
+
+    def _getitem(self, index):
+        image_info = self.data[index]
+        image = self._read_image(image_info['image_id'])
+        boxes = image_info['boxes']
+        boxes[:, 0] *= image.shape[1]
+        boxes[:, 1] *= image.shape[0]
+        boxes[:, 2] *= image.shape[1]
+        boxes[:, 3] *= image.shape[0]
+        labels = image_info['labels']
+        if self.transform:
+            image, boxes, labels = self.transform(image, boxes, labels)
+        if self.target_transform:
+            boxes, labels = self.target_transform(boxes, labels)
+        return image_info['image_id'], image, boxes, labels
+
+    def __getitem__(self, index):
+        _, image, boxes, labels = self._getitem(index)
+        return image, boxes, labels

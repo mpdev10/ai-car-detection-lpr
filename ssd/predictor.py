@@ -1,6 +1,6 @@
 import torch
 
-from .data_preprocessing import PredictionTransform
+from data_processing.data_preprocessing import PredictionTransform
 from ..utils import box_utils
 from ..utils.misc import Timer
 

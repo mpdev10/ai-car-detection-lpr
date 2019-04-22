@@ -56,3 +56,10 @@ class BDDFormatDataset:
         else:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         return image
+
+    def get_image(self, index):
+        image_info = self.data[index]
+        image = self._read_image(image_info['image_id'])
+        if self.transform:
+            image, _ = self.transform(image)
+        return image

@@ -1,6 +1,7 @@
 import json
 
 import cv2
+import numpy as np
 from pandas.io.json import json_normalize
 from skimage import io
 
@@ -82,3 +83,8 @@ class BDDFormatDataset:
     def __getitem__(self, index):
         _, image, boxes, labels = self._getitem(index)
         return image, boxes, labels
+
+    def get_annotation(self, index):
+        image_id, image, boxes, labels = self._getitem(index)
+        is_difficult = np.zeros(boxes.shape[0], dtype=np.uint8)
+        return image_id, (boxes, labels, is_difficult)

@@ -11,7 +11,9 @@ class BDDFormatDataset:
         self.transform = transform
         self.target_transform = target_transform
         self.dataset_type = dataset_type.lower()
-        self._read_data()
+        self.data, self.class_names, self.class_dict = self._read_data()
+        self.min_image_num = -1
+        self.ids = [info['image_id'] for info in self.data]
 
     def _read_data(self):
         annotation_file = f"{self.root}/sub-{self.dataset_type}-annotations.json"

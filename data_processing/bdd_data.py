@@ -1,6 +1,8 @@
 import json
 
+import cv2
 from pandas.io.json import json_normalize
+from skimage import io
 
 
 class BDDFormatDataset:
@@ -46,3 +48,11 @@ class BDDFormatDataset:
                 'labels': labels
             })
         return data, class_names, class_dict
+
+    def _read_image(self, image_id):
+        image = io.imread(image_id)
+        if image.shape[2] == 1:
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+        else:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        return image

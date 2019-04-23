@@ -34,20 +34,24 @@ class BDDFormatDataset:
         data = []
 
         for image, group in annotations.groupby('name'):
-            boxes = []
-            labels = []
-
+            labels = np.array([])
+            boxes = None
             for labels_l in group.labels:
                 if labels_l:
                     for label in labels_l:
                         box = label['box2d']
-                        boxes.append([box['x1'], box['y1'], box['x2'], box['y2']])
-                        labels.append(class_dict[label['category']])
-            data.append({
-                'image_id': image,
-                'boxes': boxes,
-                'labels': labels
-            })
+                        curr_box = np.array([[box['x1'], box['y1'], box['x2'], box['y2']]]).astype(np.float32)
+                        if boxes is None:
+                            boxes = curr_box
+                        else:
+                            boxes = np.vstack((boxes, curr_box))
+                        labels = np.append(labels, class_dict[label['category']]).astype(np.long)
+            if boxes is not None:
+                data.append({
+                    'image_id': image,
+                    'boxes': boxes,
+                    'labels': labels
+                })
         return data, class_names, class_dict
 
     def _read_image(self, image_id):
@@ -88,3 +92,21 @@ class BDDFormatDataset:
         image_id, image, boxes, labels = self._getitem(index)
         is_difficult = np.zeros(boxes.shape[0], dtype=np.uint8)
         return image_id, (boxes, labels, is_difficult)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __repr__(self):
+        if self.class_stat is None:
+            self.class_stat = {name: 0 for name in self.class_names[1:]}
+            for example in self.data:
+                for class_index in example['labels']:
+                    class_name = self.class_names[class_index]
+                    self.class_stat[class_name] += 1
+        content = ["Dataset Summary:"
+                   f"Number of Images: {len(self.data)}",
+                   f"Minimum Number of Images for a Class: {self.min_image_num}",
+                   "Label Distribution:"]
+        for class_name, num in self.class_stat.items():
+            content.append(f"\t{class_name}: {num}")
+        return "\n".join(content)

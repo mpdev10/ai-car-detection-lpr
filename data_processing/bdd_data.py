@@ -34,7 +34,7 @@ class BDDFormatDataset:
         data = []
 
         for image, group in annotations.groupby('name'):
-            labels = np.array([])
+            labels = np.empty
             boxes = None
             for labels_l in group.labels:
                 if labels_l:
@@ -45,7 +45,7 @@ class BDDFormatDataset:
                             boxes = curr_box
                         else:
                             boxes = np.vstack((boxes, curr_box))
-                        labels = np.append(labels, class_dict[label['category']]).astype(np.long)
+                            labels = np.append(labels, class_dict[label['category']])
             if boxes is not None:
                 data.append({
                     'image_id': image,

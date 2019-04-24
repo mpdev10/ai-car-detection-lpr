@@ -21,8 +21,7 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('--datasets', nargs='+', help='Dataset directory path')
 parser.add_argument('--validation_dataset', help='Dataset directory path')
-parser.add_argument('--balance_data', action='store_true',
-                    help="Balance training data by down-sampling more frequent labels.")
+parser.add_argument('--labels', help='Label directory path')
 parser.add_argument('--freeze_base_net', action='store_true',
                     help="Freeze base net layers.")
 parser.add_argument('--freeze_net', action='store_true',
@@ -162,10 +161,14 @@ if __name__ == '__main__':
 
     test_transform = TestTransform(config.image_size, config.image_mean, config.image_std)
 
+    labels_path = None
+    if args.labels:
+        labels_path = args.labels
+
     logging.info("Prepare training datasets.")
     datasets = []
     for dataset_path in args.datasets:
-        dataset = BDDFormatDataset(dataset_path,
+        dataset = BDDFormatDataset(dataset_path, label_file=labels_path,
                                    transform=train_transform, target_transform=target_transform,
                                    dataset_type="train")
         num_classes = len(dataset.class_names)
@@ -176,7 +179,7 @@ if __name__ == '__main__':
                               num_workers=args.num_workers,
                               shuffle=True)
     logging.info("Prepare Validation datasets.")
-    val_dataset = BDDFormatDataset(dataset_path,
+    val_dataset = BDDFormatDataset(dataset_path, label_file=labels_path,
                                    transform=test_transform, target_transform=target_transform,
                                    dataset_type="test")
 

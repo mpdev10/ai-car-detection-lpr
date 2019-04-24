@@ -1,4 +1,5 @@
 import json
+import os
 
 import cv2
 import numpy as np
@@ -9,11 +10,12 @@ from skimage import io
 class BDDFormatDataset:
 
     def __init__(self, root, transform=None, target_transform=None,
-                 dataset_type='train'):
+                 dataset_type='train', label_file=None):
         self.root = root
         self.transform = transform
         self.target_transform = target_transform
         self.dataset_type = dataset_type.lower()
+        self.label_file = label_file
         self.data, self.class_names, self.class_dict = self._read_data()
         self.min_image_num = -1
         self.ids = [info['image_id'] for info in self.data]
@@ -26,13 +28,22 @@ class BDDFormatDataset:
         with open(annotation_file) as f:
             annotations = json.load(f)
         annotations = json_normalize(annotations)
-        normalized_list = annotations.labels.apply(lambda labels: list() if not labels else list(labels))
-        categories = set()
-        for labels in normalized_list:
-            for label in labels:
-                categories.add(label['category'])
-        class_names = ['BACKGROUND'] + sorted(list(categories))
-        print(class_names)
+        if self.label_file is not None:
+            label_file_name = f"{self.root}/{self.label_file}"
+            if os.path.isfile(label_file_name):
+                class_string = ""
+                with open(label_file_name, 'r') as infile:
+                    for line in infile:
+                        class_string += line.rstrip()
+                class_names = class_string.split(',')
+                class_names.insert(0, 'BACKGROUND')
+        else:
+            normalized_list = annotations.labels.apply(lambda labels: list() if not labels else list(labels))
+            categories = set()
+            for labels in normalized_list:
+                for label in labels:
+                    categories.add(label['category'])
+            class_names = ['BACKGROUND'] + sorted(list(categories))
         class_dict = {class_name: i for i, class_name in enumerate(class_names)}
         data = []
 

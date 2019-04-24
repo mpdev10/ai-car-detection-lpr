@@ -184,6 +184,7 @@ if __name__ == '__main__':
                             shuffle=False)
     logging.info("Build network.")
     net = create_net(num_classes)
+    print(num_classes)
     min_loss = -10000.0
     last_epoch = -1
 

@@ -31,8 +31,9 @@ class BDDFormatDataset:
         for labels in normalized_list:
             for label in labels:
                 categories.add(label['category'])
-        class_names = sorted(list(categories))
-        class_dict = {class_name: i + 1 for i, class_name in enumerate(class_names)}
+        class_names = ['BACKGROUND'] + sorted(list(categories))
+        print(class_names)
+        class_dict = {class_name: i for i, class_name in enumerate(class_names)}
         data = []
 
         for image, group in annotations.groupby('name'):

@@ -95,6 +95,7 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     running_classification_loss = 0.0
     for i, data in enumerate(loader):
         images, boxes, labels = data
+
         images = images.to(device)
         boxes = boxes.to(device)
         labels = labels.to(device)
@@ -269,6 +270,6 @@ if __name__ == '__main__':
                 f"Validation Regression Loss {val_regression_loss:.4f}, " +
                 f"Validation Classification Loss: {val_classification_loss:.4f}"
             )
-            model_path = os.path.join(args.checkpoint_folder, f"{args.net}-Epoch-{epoch}-Loss-{val_loss}.pth")
+            model_path = os.path.join(args.checkpoint_folder, f"Model-Epoch-{epoch}-Loss-{val_loss}.pth")
             net.save(model_path)
             logging.info(f"Saved model {model_path}")

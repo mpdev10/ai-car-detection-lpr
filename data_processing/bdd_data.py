@@ -32,7 +32,7 @@ class BDDFormatDataset:
             for label in labels:
                 categories.add(label['category'])
         class_names = sorted(list(categories))
-        class_dict = {class_name: i for i, class_name in enumerate(class_names)}
+        class_dict = {class_name: i + 1 for i, class_name in enumerate(class_names)}
         data = []
 
         for image, group in annotations.groupby('name'):
@@ -55,6 +55,7 @@ class BDDFormatDataset:
                     'boxes': boxes,
                     'labels': labels
                 })
+
         return data, class_names, class_dict
 
     def _read_image(self, image_id):

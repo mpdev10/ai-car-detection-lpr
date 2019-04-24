@@ -47,7 +47,6 @@ class BDDFormatDataset:
                             boxes = np.vstack((boxes, curr_box))
                         labels = np.append(labels, class_dict[label['category']]).astype(np.long)
             if boxes is not None:
-                print(image)
                 data.append({
                     'image_id': image,
                     'boxes': boxes,

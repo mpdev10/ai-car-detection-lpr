@@ -176,7 +176,7 @@ if __name__ == '__main__':
                               shuffle=True)
     logging.info("Prepare Validation datasets.")
     val_dataset = BDDFormatDataset(dataset_path,
-                                   transform=train_transform, target_transform=target_transform,
+                                   transform=test_transform, target_transform=target_transform,
                                    dataset_type="test")
 
     val_loader = DataLoader(val_dataset, args.batch_size,

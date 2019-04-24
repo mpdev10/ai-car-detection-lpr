@@ -18,6 +18,8 @@ class BDDFormatDataset:
         self.min_image_num = -1
         self.ids = [info['image_id'] for info in self.data]
 
+        self.class_stat = None
+
     def _read_data(self):
         annotation_file = f"{self.root}/sub-{self.dataset_type}-annotations.json"
 
@@ -34,7 +36,7 @@ class BDDFormatDataset:
         data = []
 
         for image, group in annotations.groupby('name'):
-            labels = np.empty
+            labels = None
             boxes = None
             for labels_l in group.labels:
                 if labels_l:
@@ -43,6 +45,7 @@ class BDDFormatDataset:
                         curr_box = np.array([[box['x1'], box['y1'], box['x2'], box['y2']]]).astype(np.float32)
                         if boxes is None:
                             boxes = curr_box
+                            labels = np.array([class_dict[label['category']]])
                         else:
                             boxes = np.vstack((boxes, curr_box))
                             labels = np.append(labels, [class_dict[label['category']]])

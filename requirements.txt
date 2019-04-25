@@ -1,0 +1,9 @@
+torchvision
+torch
+pandas
+h5py
+tensorflow
+keras
+numpy
+opencv-python
+sklearn

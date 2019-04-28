@@ -1,5 +1,6 @@
-import centroid as centroid
 import numpy as np
+
+import object_tracking.centroid as centroid
 
 
 def assign_ids(boxes, prev=None):

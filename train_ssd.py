@@ -94,7 +94,6 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     running_classification_loss = 0.0
     for i, data in enumerate(loader):
         images, boxes, labels = data
-
         images = images.to(device)
         boxes = boxes.to(device)
         labels = labels.to(device)
@@ -130,21 +129,20 @@ def test(loader, net, criterion, device):
     running_regression_loss = 0.0
     running_classification_loss = 0.0
     num = 0
-    for _, data in enumerate(loader):
-        images, boxes, labels = data
-        images = images.to(device)
-        boxes = boxes.to(device)
-        labels = labels.to(device)
-        num += 1
-
-        with torch.no_grad():
+    with torch.no_grad():
+        for _, data in enumerate(loader):
+            images, boxes, labels = data
+            images = images.to(device)
+            boxes = boxes.to(device)
+            labels = labels.to(device)
+            num += 1
             confidence, locations = net(images)
             regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)
             loss = regression_loss + classification_loss
 
-        running_loss += loss.item()
-        running_regression_loss += regression_loss.item()
-        running_classification_loss += classification_loss.item()
+            running_loss += loss.item()
+            running_regression_loss += regression_loss.item()
+            running_classification_loss += classification_loss.item()
     return running_loss / num, running_regression_loss / num, running_classification_loss / num
 
 

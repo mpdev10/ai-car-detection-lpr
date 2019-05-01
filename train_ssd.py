@@ -176,7 +176,7 @@ if __name__ == '__main__':
             dataset = BDDFormatDataset(dataset_path, label_file=labels_path,
                                        transform=train_transform, target_transform=target_transform,
                                        dataset_type="train")
-        elif args.dataset_type == 'open_images':
+        elif args.train_datatype == 'open_images':
             dataset = OpenImagesDataset(dataset_path,
                                         transform=train_transform, target_transform=target_transform,
                                         dataset_type="train", balance_data=args.balance_data)

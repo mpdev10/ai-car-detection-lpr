@@ -1,3 +1,4 @@
+botocore
 torchvision
 torch
 pandas

@@ -179,7 +179,7 @@ if __name__ == '__main__':
         elif args.train_datatype == 'open_images':
             dataset = OpenImagesDataset(dataset_path,
                                         transform=train_transform, target_transform=target_transform,
-                                        dataset_type="train", balance_data=args.balance_data)
+                                        dataset_type="train")
             label_file = os.path.join(args.checkpoint_folder, "open-images-model-labels.txt")
             store_labels(label_file, dataset.class_names)
         logging.info(dataset)

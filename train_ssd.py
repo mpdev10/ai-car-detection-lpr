@@ -10,17 +10,23 @@ from torch.utils.data import DataLoader, ConcatDataset
 
 from data_processing.bdd_data import BDDFormatDataset
 from data_processing.data_preprocessing import TrainAugmentation, TestTransform
+from data_processing.open_images import OpenImagesDataset
 from ssd.config import mobilenetv1_ssd_config
 from ssd.mobilenet_ssd import create_mobilenetv1_ssd
 from ssd.multibox_loss import MultiboxLoss
 from ssd.ssd import MatchPrior
-from utils import str2bool, Timer, freeze_net_layers
+from utils import str2bool, Timer, freeze_net_layers, store_labels
 
 parser = argparse.ArgumentParser(
     description='Single Shot MultiBox Detector Training With Pytorch')
 
+# Dataset type
+parser.add_argument('--train_datatype', help='Training dataset type. Possible options: bdd, open_images');
+parser.add_argument('--validation_datatype', help='Validation dataset type. Possible options: bdd, open_images');
+
 parser.add_argument('--datasets', nargs='+', help='Dataset directory path')
 parser.add_argument('--validation_dataset', help='Dataset directory path')
+
 parser.add_argument('--labels', help='Label directory path')
 parser.add_argument('--freeze_base_net', action='store_true',
                     help="Freeze base net layers.")
@@ -166,9 +172,17 @@ if __name__ == '__main__':
     logging.info("Prepare training datasets.")
     datasets = []
     for dataset_path in args.datasets:
-        dataset = BDDFormatDataset(dataset_path, label_file=labels_path,
-                                   transform=train_transform, target_transform=target_transform,
-                                   dataset_type="train")
+        if args.train_datatype == 'bdd':
+            dataset = BDDFormatDataset(dataset_path, label_file=labels_path,
+                                       transform=train_transform, target_transform=target_transform,
+                                       dataset_type="train")
+        elif args.dataset_type == 'open_images':
+            dataset = OpenImagesDataset(dataset_path,
+                                        transform=train_transform, target_transform=target_transform,
+                                        dataset_type="train", balance_data=args.balance_data)
+            label_file = os.path.join(args.checkpoint_folder, "open-images-model-labels.txt")
+            store_labels(label_file, dataset.class_names)
+        logging.info(dataset)
         num_classes = len(dataset.class_names)
         datasets.append(dataset)
     train_dataset = ConcatDataset(datasets)
@@ -177,7 +191,7 @@ if __name__ == '__main__':
                               num_workers=args.num_workers,
                               shuffle=True)
     logging.info("Prepare Validation datasets.")
-    val_dataset = BDDFormatDataset(dataset_path, label_file=labels_path,
+    val_dataset = BDDFormatDataset(args.validation_dataset, label_file=labels_path,
                                    transform=test_transform, target_transform=target_transform,
                                    dataset_type="test")
 

@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser(
     description='Single Shot MultiBox Detector Training With Pytorch')
 
 # Dataset type
-parser.add_argument('--train_datatype', help='Training dataset type. Possible options: bdd, open_images');
+parser.add_argument('--train_datatype', nargs='+', help='Training dataset types. Possible options: bdd, open_images');
 parser.add_argument('--validation_datatype', help='Validation dataset type. Possible options: bdd, open_images');
 
 parser.add_argument('--datasets', nargs='+', help='Dataset directory path')
@@ -171,12 +171,13 @@ if __name__ == '__main__':
 
     logging.info("Prepare training datasets.")
     datasets = []
+    i: int = 0
     for dataset_path in args.datasets:
-        if args.train_datatype == 'bdd':
+        if args.train_datatype[i] == 'bdd':
             dataset = BDDFormatDataset(dataset_path, label_file=labels_path,
                                        transform=train_transform, target_transform=target_transform,
                                        dataset_type="train")
-        elif args.train_datatype == 'open_images':
+        elif args.train_datatype[i] == 'open_images':
             dataset = OpenImagesDataset(dataset_path,
                                         transform=train_transform, target_transform=target_transform,
                                         dataset_type="train")
@@ -185,6 +186,7 @@ if __name__ == '__main__':
         logging.info(dataset)
         num_classes = len(dataset.class_names)
         datasets.append(dataset)
+        i = i + 1
     train_dataset = ConcatDataset(datasets)
     logging.info("Train dataset size: {}".format(len(train_dataset)))
     train_loader = DataLoader(train_dataset, args.batch_size,

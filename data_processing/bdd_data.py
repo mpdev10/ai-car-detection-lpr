@@ -10,7 +10,7 @@ from skimage import io
 class BDDFormatDataset:
 
     def __init__(self, root, transform=None, target_transform=None,
-                 dataset_type='train', label_file=None):
+                 dataset_type='train', label_file=None, balance_data=False):
         self.root = root
         self.transform = transform
         self.target_transform = target_transform
@@ -18,11 +18,14 @@ class BDDFormatDataset:
         self.label_file = label_file
         self.data, self.class_names, self.class_dict = self._read_data()
         self.min_image_num = -1
+        self.balance_data = balance_data
+        if self.balance_data:
+            self.data = self._balance_data()
         self.ids = [info['image_id'] for info in self.data]
-
         self.class_stat = None
 
     def _read_data(self):
+        global class_names
         annotation_file = f"{self.root}/sub-{self.dataset_type}-annotations.json"
 
         with open(annotation_file) as f:
@@ -89,10 +92,6 @@ class BDDFormatDataset:
         image_info = self.data[index]
         image = self._read_image(image_info['image_id'])
         boxes = image_info['boxes']
-        boxes[:, 0] *= image.shape[1]
-        boxes[:, 1] *= image.shape[0]
-        boxes[:, 2] *= image.shape[1]
-        boxes[:, 3] *= image.shape[0]
         labels = image_info['labels']
         if self.transform:
             image, boxes, labels = self.transform(image, boxes, labels)
@@ -126,3 +125,18 @@ class BDDFormatDataset:
         for class_name, num in self.class_stat.items():
             content.append(f"\t{class_name}: {num}")
         return "\n".join(content)
+
+    def _balance_data(self):
+        label_image_indexes = [set() for _ in range(len(self.class_names))]
+        for i, image in enumerate(self.data):
+            for label_id in image['labels']:
+                label_image_indexes[label_id].add(i)
+        label_stat = [len(s) for s in label_image_indexes]
+        self.min_image_num = min(label_stat[1:])
+        sample_image_indexes = set()
+        for image_indexes in label_image_indexes[1:]:
+            image_indexes = np.array(list(image_indexes))
+            sub = np.random.permutation(image_indexes)[:self.min_image_num]
+            sample_image_indexes.update(sub)
+        sample_data = [self.data[i] for i in sample_image_indexes]
+        return sample_data

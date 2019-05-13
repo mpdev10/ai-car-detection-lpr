@@ -27,7 +27,8 @@ def assign_ids(boxes, prev_values=None):
     if prev_values is None:
         ids = np.arange(centroids.shape[0])
     elif prev_values is not None:
-        prev_centroids, prev_ids = prev_values
+        prev_boxes, prev_ids = prev_values
+        prev_centroids = centroid.compute_centroids(prev_boxes)
         ids = np.ones(centroids.shape[0], dtype=int) * (-1)
         centroids_indexes = np.arange(0, centroids.shape[0])
         for i in range(prev_centroids.shape[0]):
@@ -50,4 +51,11 @@ def assign_ids(boxes, prev_values=None):
             if ids[i] == -1:
                 ids[i] = np.max(ids) + 1 if np.min(np.abs(ids)) <= 0 else np.min(np.abs(ids)) - 1
 
-    return centroids, ids
+    return boxes, ids
+
+
+def track(class_dict, class_name, prediction):
+    tracked_objects, untracked_objects = filter_by_class_name(class_dict, class_name, prediction)
+    boxes, _, _ = tracked_objects
+    _, ids = assign_ids(boxes)
+    return tracked_objects, untracked_objects, ids

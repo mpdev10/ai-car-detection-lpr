@@ -7,4 +7,4 @@ def compute_centroids(boxes):
 
 
 def euclidean_distance(p_from, p_to):
-    return np.sum(np.abs(p_from - p_to), axis=1)
+    return np.sum(np.abs(p_from - p_to))

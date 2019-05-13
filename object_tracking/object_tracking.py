@@ -17,7 +17,7 @@ def filter_by_class_name(class_dict, class_name, prediction):
                np.delete(probs, to_delete, 0)
     not_matching = np.delete(boxes, matching_class_indexes, 0), \
                    np.delete(labels, matching_class_indexes, 0), \
-                   np.delete(matching_class_indexes, 0)
+                   np.delete(probs, matching_class_indexes, 0)
     return matching, not_matching
 
 

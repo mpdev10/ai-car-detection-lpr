@@ -83,6 +83,9 @@ parser.add_argument('--use_cuda', default=True, type=str2bool,
 parser.add_argument('--checkpoint_folder', default='models/',
                     help='Directory for saving checkpoint models')
 
+parser.add_argument('--balance_data', action='store_true',
+                    help="Balance training data by down-sampling more frequent labels.")
+
 logging.basicConfig(stream=sys.stdout, level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 args = parser.parse_args()
@@ -176,11 +179,11 @@ if __name__ == '__main__':
         if args.train_datatype[i] == 'bdd':
             dataset = BDDFormatDataset(dataset_path, label_file=labels_path,
                                        transform=train_transform, target_transform=target_transform,
-                                       dataset_type="train")
+                                       dataset_type="train", balance_data=args.balance_data)
         elif args.train_datatype[i] == 'open_images':
             dataset = OpenImagesDataset(dataset_path,
                                         transform=train_transform, target_transform=target_transform,
-                                        dataset_type="train")
+                                        dataset_type="train", balance_data=args.balance_data)
             label_file = os.path.join(args.checkpoint_folder, "open-images-model-labels.txt")
             store_labels(label_file, dataset.class_names)
         logging.info(dataset)

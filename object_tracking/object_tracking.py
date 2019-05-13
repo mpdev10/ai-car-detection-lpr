@@ -6,10 +6,19 @@ import object_tracking.centroid as centroid
 def filter_by_class_name(class_dict, class_name, prediction):
     boxes, labels, probs = prediction
     to_delete = np.array([])
+    matching_class_indexes = np.array([])
     for i in range(boxes.shape[0]):
         if class_dict[labels[i]] != class_name:
             to_delete = np.append(to_delete, [i])
-    return np.delete(boxes, to_delete, 0), np.delete(labels, to_delete, 0), np.delete(probs, to_delete, 0)
+        else:
+            matching_class_indexes = np.append(matching_class_indexes, [i])
+    matching = np.delete(boxes, to_delete, 0), \
+               np.delete(labels, to_delete, 0), \
+               np.delete(probs, to_delete, 0)
+    not_matching = np.delete(boxes, matching_class_indexes, 0), \
+                   np.delete(labels, matching_class_indexes, 0), \
+                   np.delete(matching_class_indexes, 0)
+    return matching, not_matching
 
 
 def assign_ids(boxes, prev_values=None):

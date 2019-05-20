@@ -8,3 +8,7 @@ def compute_centroids(boxes):
 
 def euclidean_distance(p_from, p_to):
     return np.sum(np.abs(p_from - p_to))
+
+
+def intersect_exists(box1, box2):
+    return box1[2] >= box2[0] and box1[0] <= box2[2] and box1[3] >= box2[1] and box1[1] <= box2[3]

@@ -3,11 +3,12 @@ import torch.nn.functional as F
 
 
 class CNN(nn.Module):
-    def __init__(self, img_size=56, num_classes=36):
+    def __init__(self, img_w=24, img_h=32, num_classes=36):
         super(CNN, self).__init__()
 
-        self.img_size = img_size
-        linear_size = (16 * (((self.img_size - 4) / 2 - 4) / 2) * (((self.img_size - 4) / 2 - 4) / 2))
+        self.img_w = img_w
+        self.img_h = img_h
+        linear_size = (16 * (((self.img_w - 4) / 2 - 4) / 2) * (((self.img_h - 4) / 2 - 4) / 2))
         linear_size = int(linear_size)
         self.linear_size = linear_size
 
@@ -18,7 +19,7 @@ class CNN(nn.Module):
         self.fc2 = nn.Linear(64, num_classes)
 
     def forward(self, x):
-        x = x.view(-1, 1, self.img_size, self.img_size)
+        x = x.view(-1, 1, self.img_h, self.img_w)
 
         # input (1, img_size, img_size) output (8, img_size - 4, img_size - 4)
         x = F.relu(self.conv1(x))

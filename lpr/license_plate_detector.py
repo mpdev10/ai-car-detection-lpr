@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from skimage import measure
-from skimage.filters import threshold_otsu
+from skimage.filters import threshold_isodata
 from skimage.measure import regionprops
 
 
@@ -14,8 +14,8 @@ class LicensePlateDetector:
         self.max_h = max_height
 
     def find_candidates(self, image):
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        threshold_value = threshold_otsu(image)
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+        threshold_value = threshold_isodata(image)
         binary_car_image = image > threshold_value
         label_image = measure.label(binary_car_image)
         candidates = []

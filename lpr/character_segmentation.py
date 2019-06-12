@@ -3,7 +3,7 @@ from skimage.measure import regionprops
 
 
 class CharSeg:
-    def __init__(self, character_dimensions, padding=2):
+    def __init__(self, character_dimensions, padding=0):
         self.padding = padding
         self.character_dimensions = character_dimensions
 

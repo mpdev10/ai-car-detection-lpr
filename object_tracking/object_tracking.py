@@ -47,7 +47,8 @@ class ObjectTracker:
                 shortest_distance_centroid_index = centroids_indexes[0]
                 index_count = 0
                 current_list_index = 0
-                for j in centroids_indexes:
+                for j \
+                        in centroids_indexes:
                     distance = centroid.euclidean_distance(prev_centroids[i], centroids[j])
                     if distance < shortest_distance:
                         shortest_distance = distance

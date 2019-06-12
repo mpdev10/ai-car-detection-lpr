@@ -22,7 +22,8 @@ class StateQualifier:
             if ids[i] in prev_dict:
                 if euclidean_distance(centroids[i], prev_dict[ids[i]]) > 20:
                     state_dict[ids[i]] = "MOVE"
-
+            if ids[i] == self.last_left_id:
+                state_dict[ids[i]] = "LEFT"
             if intersect_exists(boxes[i], self.parking_place_box):
                 self.parked_car_id = ids[i]
                 state_dict[ids[i]] = "ARRIVED"
@@ -30,8 +31,6 @@ class StateQualifier:
                 self.parked_car_id = -1
                 self.last_left_id = ids[i]
                 self.iteration_counter = self.left_tracking_iterations
-            if ids[i] == self.last_left_id:
-                state_dict[ids[i]] = "LEFT"
             if self.iteration_counter == 0:
                 self.last_left_id = -1
             elif self.iteration_counter > 0:

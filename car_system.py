@@ -1,12 +1,17 @@
 import numpy as np
 
+from lpr.LPR import LPR
+from object_tracking.object_tracking import ObjectTracker
+from ssd.predictor import Predictor
+from ssd.ssd import SSD
+from state_determining.car_state import StateQualifier
 from state_determining.light_state import determine_light_on
 
 
 class CarSystem:
-    def __init__(self, car_class_names, detection_net,
-                 detection_predictor, parking_place_bbox, state_qualifier,
-                 car_tracker, lpr, frame_skip, light_level_th, prob_th):
+    def __init__(self, car_class_names, detection_net: SSD,
+                 detection_predictor: Predictor, parking_place_bbox, state_qualifier: StateQualifier,
+                 car_tracker: ObjectTracker, lpr: LPR, frame_skip, light_level_th, prob_th):
         self.car_class_names = car_class_names
         self.detection_net = detection_net
         self.detection_predictor = detection_predictor

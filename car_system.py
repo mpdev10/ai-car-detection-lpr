@@ -9,13 +9,12 @@ from state_determining.light_state import determine_light_on
 
 
 class CarSystem:
-    def __init__(self, car_class_names, detection_net: SSD,
-                 detection_predictor: Predictor, parking_place_bbox, state_qualifier: StateQualifier,
+    def __init__(self, detection_net: SSD,
+                 detection_predictor: Predictor, parking_spot_bbox, state_qualifier: StateQualifier,
                  car_tracker: ObjectTracker, lpr: LPR, frame_skip, light_level_th, prob_th):
-        self.car_class_names = car_class_names
         self.detection_net = detection_net
         self.detection_predictor = detection_predictor
-        self.parking_place_bbox = parking_place_bbox
+        self.parking_spot_bbox = parking_spot_bbox
         self.state_qualifier = state_qualifier
         self.car_tracker = car_tracker
         self.lpr = lpr

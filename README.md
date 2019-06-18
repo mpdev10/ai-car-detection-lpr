@@ -80,7 +80,7 @@ Convolutional Neural Network class made for image recognition. (used to recogniz
 Parameters | Description
 ---------- | -----------
 img_w: **int** | Width in pixels of input image for forward propagation
-img_h: **int** | Height in pixels of input pimage for forward propagation
+img_h: **int** | Height in pixels of input image for forward propagation
 num_classes: **int** | Number of classes, which is also size of output layer
 
 Public methods:

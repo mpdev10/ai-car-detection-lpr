@@ -89,7 +89,7 @@ Public methods:
    <b>forward</b>(<i>x</i>)
 </summary>
    
-Returns **torch.Tensor** of lenght equal to number of classes. Each index of tensor's cells represents one class index. 
+Returns **torch.Tensor** of length equal to number of classes. Each index of tensor's cells represents one class index. 
 </details>
 </p>   
 </details>

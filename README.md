@@ -58,10 +58,40 @@ Public methods:
 <summary>
    <b>handle_frame</b>(<i>image</i>)
 </summary>
+Returns tuple consisting of: array of ids of objects, array of bounding boxes of objects, array of objects' labels, array of objects' detection probabilities, license plate number of parked car and dictionary which assigns state to id of object  
+   
 </details>
  
 </p>
 </details>
-  
+
+<details>
+<summary>
+<b>cnn/cnn.py</b>    
+</summary>
+<p>
+
+### CNN
+
+class **CNN**(_img_w=24, img_h=32, num_classes=36_)
+
+Convolutional Neural Network class made for image recognition. (used to recognize characters of license plate) Is a subclass of **torch.nn.Module**
+
+Parameters | Description
+---------- | -----------
+img_w: **int** | Width in pixels of input image for forward propagation
+img_h: **int** | Height in pixels of input pimage for forward propagation
+num_classes: **int** | Number of classes, which is also size of output layer
+
+Public methods:
+<details>
+<summary>
+   <b>forward</b>(<i>x</i>)
+</summary>
+   
+Returns **torch.Tensor** of lenght equal to number of classes. Each index of tensor's cells represents one class index. 
+</details>
+</p>   
+</details>
   
   

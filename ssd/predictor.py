@@ -1,7 +1,8 @@
 import torch
 
 from data_processing.data_preprocessing import PredictionTransform
-from utils import Timer, box_utils
+from ssd.utils import Timer
+from ssd.utils import box_utils
 
 
 class Predictor:

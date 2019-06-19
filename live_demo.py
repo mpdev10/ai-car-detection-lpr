@@ -11,8 +11,8 @@ from lpr.cnn import CNN
 from lpr.license_plate_detector import LicensePlateDetector
 from object_tracking.object_tracking import ObjectTracker
 from ssd.mobilenet_ssd import create_mobilenetv1_ssd, create_mobilenetv1_ssd_predictor
+from ssd.utils.misc import Timer
 from state_determining.car_state import StateQualifier
-from utils.misc import Timer
 
 if len(sys.argv) < 3:
     print('Usage: python live_demo.py <model path> <label path> [video file]')

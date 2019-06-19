@@ -15,7 +15,7 @@ from ssd.config import mobilenetv1_ssd_config
 from ssd.mobilenet_ssd import create_mobilenetv1_ssd
 from ssd.multibox_loss import MultiboxLoss
 from ssd.ssd import MatchPrior
-from utils import str2bool, Timer, freeze_net_layers, store_labels
+from ssd.utils import str2bool, Timer, freeze_net_layers, store_labels
 
 parser = argparse.ArgumentParser(
     description='Single Shot MultiBox Detector Training With Pytorch')

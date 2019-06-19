@@ -4,10 +4,10 @@ import cv2
 import torch
 
 from car_system import CarSystem
-from cnn.cnn import CNN
 from data_processing.ocr_data import CharDataset
 from lpr.LPR import LPR
 from lpr.character_segmentation import CharSeg
+from lpr.cnn import CNN
 from lpr.license_plate_detector import LicensePlateDetector
 from object_tracking.object_tracking import ObjectTracker
 from ssd.mobilenet_ssd import create_mobilenetv1_ssd, create_mobilenetv1_ssd_predictor

@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import torch
 
-from cnn.cnn import CNN
 from lpr.character_segmentation import CharSeg
+from lpr.cnn import CNN
 from lpr.license_plate_detector import LicensePlateDetector
 
 

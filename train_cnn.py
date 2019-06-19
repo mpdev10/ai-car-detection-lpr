@@ -4,8 +4,8 @@ import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader
 
-from cnn.cnn import CNN
 from data_processing.ocr_data import CharDataset
+from lpr.cnn import CNN
 
 parser = argparse.ArgumentParser(
     description='Convolutional Neural Network Training Wiseq.augment_imagesth Pytorch')

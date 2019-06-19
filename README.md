@@ -67,7 +67,7 @@ Returns tuple consisting of: array of ids of objects, array of bounding boxes of
 
 <details>
 <summary>
-<b>cnn/cnn.py</b>    
+<b>lpr/cnn.py</b>    
 </summary>
 <p>
 

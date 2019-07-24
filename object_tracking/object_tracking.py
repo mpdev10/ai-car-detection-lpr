@@ -4,11 +4,24 @@ import object_tracking.centroid as centroid
 
 
 class ObjectTracker:
+    """
+    Klasa odpowiedzialna za śledzenie obiektów i przyznawanie im identyfikatorów
+    """
+
     def __init__(self, class_dict):
+        """
+        :param class_dict: słownik tłumaczący liczbę na nazwę klasy
+        """
         self.class_dict = class_dict
         self.prev_values = None
 
     def track(self, class_name, prediction):
+        """
+        Metoda, która przyznaje identyfikatory śledzonym obiektom i odseparowuje je od reszty
+        :param class_name: nazwa etykiety śledzonych obiektów
+        :param prediction: wynik metody predict() instancji klasy Predictor
+        :return: krotka
+        """
         tracked_objects, untracked_objects = self._filter_by_class_name(class_name, prediction)
         boxes, _, _ = tracked_objects
         _, ids = self._assign_ids(boxes)
@@ -16,6 +29,12 @@ class ObjectTracker:
         return tracked_objects, untracked_objects, ids
 
     def _filter_by_class_name(self, class_name, prediction):
+        """
+        Metoda filtrująca obiekty z predykcji po nazwie klasy
+        :param class_name: nazwa klasy
+        :param prediction: wynik metody predict() instancji klasy Predictor
+        :return: krotka (matching, not_matching) gdzie obie wartości to krotki w postaci (boxes, labels, probabilities)
+        """
         boxes, labels, probs = prediction
         to_delete = np.array([])
         matching_class_indexes = np.array([])
@@ -33,6 +52,11 @@ class ObjectTracker:
         return matching, not_matching
 
     def _assign_ids(self, boxes):
+        """
+        Metoda przypisująca danym bounding boxom identyfikatory
+        :param boxes: array o kształcie (n, 4) gdzie n to liczba prostokątów
+        :return: krotka w postaci (boxes, ids), gdzie ids[i] to identyfikator prostokąta z boxes[i]
+        """
         global ids
         centroids = centroid.compute_centroids(boxes)
         if self.prev_values is None:
@@ -47,8 +71,7 @@ class ObjectTracker:
                 shortest_distance_centroid_index = centroids_indexes[0]
                 index_count = 0
                 current_list_index = 0
-                for j \
-                        in centroids_indexes:
+                for j in centroids_indexes:
                     distance = centroid.euclidean_distance(prev_centroids[i], centroids[j])
                     if distance < shortest_distance:
                         shortest_distance = distance

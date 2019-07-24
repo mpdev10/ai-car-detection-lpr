@@ -3,7 +3,16 @@ import torch.nn.functional as F
 
 
 class CNN(nn.Module):
+    """
+    Klasa rozszerzająca nn.Module, będąca implementacją konwolucyjnej sieci neuronowej
+    """
     def __init__(self, img_w=24, img_h=32, num_classes=36):
+        """
+
+        :param img_w: szerokość obrazu; domyślnie 24
+        :param img_h: wysokość obrazu; domyślnie 32
+        :param num_classes: liczba klas; domyślnie 36
+        """
         super(CNN, self).__init__()
 
         self.img_w = img_w

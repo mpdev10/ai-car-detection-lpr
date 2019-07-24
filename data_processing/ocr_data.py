@@ -22,6 +22,9 @@ seq = iaa.Sequential(
 
 
 class CharDataset(Dataset):
+    """
+    Klasa obsługująca dataset dla znaków
+    """
 
     def __init__(self, root, label_file, transform=None, char_w=24, char_h=32, multiply=1):
         self.root = root

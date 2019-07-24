@@ -3,16 +3,28 @@ import numpy as np
 from lpr.LPR import LPR
 from object_tracking.object_tracking import ObjectTracker
 from ssd.predictor import Predictor
-from ssd.ssd import SSD
 from state_determining.car_state import StateQualifier
 from state_determining.light_state import determine_light_on
 
 
 class CarSystem:
-    def __init__(self, detection_net: SSD,
+    """
+    Klasa agregująca wszystkie podzespoły systemu
+    """
+
+    def __init__(self,
                  detection_predictor: Predictor, state_qualifier: StateQualifier,
                  car_tracker: ObjectTracker, lpr: LPR, frame_skip, light_level_th, prob_th):
-        self.detection_net = detection_net
+        """
+        Konstruktor klasy CarSystem
+        :param detection_predictor: predyktor, który służy do detekcji obiektów
+        :param state_qualifier: instancja klasy określającej stan obiektów
+        :param car_tracker: instancja klasy filtrującej samochody od reszty wykrytych obiektów
+        :param lpr: instancja klasy odpowiedzialnej za wykrywanie rejestracji, segmentację i rozpoznawanie liter
+        :param frame_skip: liczba klatek, która ma byc pomijana
+        :param light_level_th: próg światła, poniżej którego klatka jest ignorowana
+        :param prob_th: próg prawdopodobieństwa, poniżej którego obiekt nie jest brany pod uwage
+        """
         self.detection_predictor = detection_predictor
         self.state_qualifier = state_qualifier
         self.car_tracker = car_tracker
@@ -29,7 +41,13 @@ class CarSystem:
         self.parked_plate = []
 
     def handle_frame(self, image):
-
+        """
+        Metoda obsługująca klatkę. Zwraca kolejno identyfikatory, bounding boxy, etykiety, prawdopodobieństwa,
+        listę potencjalnych odczytów tablicy rejestracyjnej i słownik tłumaczący indeks samochodu na obecny stan
+        :param image: obraz w formacie rgb w postaci array'a o kształcie (row, col, 3)
+        :return: identyfikatory, bounding boxy, etykiety, prawdopodobieństwa,
+        listę potencjalnych odczytów tablicy rejestracyjnej i słownik tłumaczący indeks samochodu na obecny stan
+        """
         if self.frame_counter == 0 and determine_light_on(image, self.light_level_th):
             prediction = self.detection_predictor.predict(image, 15, self.prob_th)
             if prediction[0].size(0) > 0:
@@ -52,6 +70,13 @@ class CarSystem:
                self.parked_plate, self.state_dict
 
     def _parked_plate_num(self, cars, ids, image):
+        """
+        Prywatna metoda zwracająca liste potencjalnych odczytów rejestracji
+        :param cars: array z samochodami
+        :param ids: identyfikatory samochodów
+        :param image: klatka w formacie rgb o kształcie (row, col, 3)
+        :return: lista stringów będącymi potencjalnymi odczytami rejestracji
+        """
         plates = []
         boxes, _, _ = cars
         parked_ind = -1

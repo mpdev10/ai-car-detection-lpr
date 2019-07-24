@@ -6,13 +6,11 @@ from ssd.utils import box_utils
 
 
 class MultiboxLoss(nn.Module):
+    """
+    Klasa będąca implementacją funkcji celu MultiboxLoss, która jest połączeniem blędu klasyfikacji i błędu regresji L1
+    """
     def __init__(self, priors, iou_threshold, neg_pos_ratio,
                  center_variance, size_variance, device):
-        """Implement SSD Multibox Loss.
-
-        Basically, Multibox loss combines classification loss
-         and Smooth L1 regression loss.
-        """
         super(MultiboxLoss, self).__init__()
         self.iou_threshold = iou_threshold
         self.neg_pos_ratio = neg_pos_ratio

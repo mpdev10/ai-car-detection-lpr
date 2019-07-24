@@ -7,6 +7,12 @@ from .config import mobilenetv1_ssd_config as config
 
 
 def create_mobilenetv1_ssd(num_classes, is_test=False):
+    """
+    Metoda tworzy instancję klasy SSD na bazie sieci mobilenet v1
+    :param num_classes: liczba klas
+    :param is_test: parametr mówiący, czy model służy do testowania
+    :return: instancja klasy SSD
+    """
     base_net = MobileNetV1(1001).model  # disable dropout layer
 
     source_layer_indexes = [
@@ -63,6 +69,15 @@ def create_mobilenetv1_ssd(num_classes, is_test=False):
 
 
 def create_mobilenetv1_ssd_predictor(net, candidate_size=200, nms_method=None, sigma=0.5, device=None):
+    """
+    Metoda tworzy instancję predyktora zawierającego metody do detekcji
+    :param net: obiekt klasy SSD
+    :param candidate_size: liczba potencjalnych wykrytych obiektów
+    :param nms_method: implementacja metody Non-Maximum Suppression
+    :param sigma: współczynnik sigma
+    :param device: GPU
+    :return: instancja klasy Predictor
+    """
     predictor = Predictor(net, config.image_size, config.image_mean,
                           config.image_std,
                           nms_method=nms_method,

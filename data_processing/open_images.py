@@ -3,13 +3,24 @@ import pathlib
 import cv2
 import numpy as np
 import pandas as pd
+from torch.utils.data import Dataset
 
 
-class OpenImagesDataset:
+class OpenImagesDataset(Dataset):
+    """
+    Klasa obsługująca dataset w formacie OpenImages (https://storage.googleapis.com/openimages/web/index.html)
+    """
 
     def __init__(self, root,
                  transform=None, target_transform=None,
                  dataset_type="train", balance_data=False):
+        """
+        :param root: ścieżka do katalogu z plikiem sub-[typ]-dataset.json
+        :param transform: klasa aplikująca transformacje na każdy obraz w datasecie
+        :param target_transform: klasa aplikująca transformację na bounding box'y i etykiety w datasecie
+        :param dataset_type: typ datasetu; train lub test
+        :param balance_data: jeżeli True to wyrównuje liczbe obrazów w datasecie, aby było równo dla każdej z etykiet
+        """
         self.root = pathlib.Path(root)
         self.transform = transform
         self.target_transform = target_transform
@@ -25,6 +36,11 @@ class OpenImagesDataset:
         self.class_stat = None
 
     def _getitem(self, index):
+        """
+        Metoda zwracająca id, obraz, bounding box'y i etykiety dla danego indeksu
+        :param index: indeks obrazu
+        :return: krotka w postaci (id, image, boxes, labels)
+        """
         image_info = self.data[index]
         image = self._read_image(image_info['image_id'])
         boxes = image_info['boxes']
@@ -40,16 +56,30 @@ class OpenImagesDataset:
         return image_info['image_id'], image, boxes, labels
 
     def __getitem__(self, index):
+        """
+        Metoda zwracająca obraz, bounding box'y i etykiety dla danego indeksu
+        :param index: indeks obrazu
+        :return: krotka array'ów o kształtach: image: (row, col, 3), boxes (n, 4), labels (n, 1)
+        """
         _, image, boxes, labels = self._getitem(index)
         return image, boxes, labels
 
     def get_annotation(self, index):
-        """To conform the eval_ssd implementation that is based on the VOC dataset."""
+        """
+        Metoda zwraca identyfikator i etykiety dla danego indeksu
+        :param index:
+        :return: id, (boxes, labels, is_difficult); kształty array'ów: boxes: (n, 4), labels (n, 1)
+        """
         image_id, image, boxes, labels = self._getitem(index)
         is_difficult = np.zeros(boxes.shape[0], dtype=np.uint8)
         return image_id, (boxes, labels, is_difficult)
 
     def get_image(self, index):
+        """
+        Metoda zwracająca obraz na podanym indeksie
+        :param index: indeks obrazu
+        :return: array o kształcie (row, col, 3)
+        """
         image_info = self.data[index]
         image = self._read_image(image_info['image_id'])
         if self.transform:
@@ -57,6 +87,9 @@ class OpenImagesDataset:
         return image
 
     def _read_data(self):
+        """
+        Metoda parsująca plik csv z etykietami
+        """
         annotation_file = f"{self.root}/sub-{self.dataset_type}-annotations-bbox.csv"
         annotations = pd.read_csv(annotation_file)
         class_names = ['BACKGROUND'] + sorted(list(annotations['ClassName'].unique()))
@@ -73,6 +106,9 @@ class OpenImagesDataset:
         return data, class_names, class_dict
 
     def __len__(self):
+        """
+        Metoda zwraca wielkość datasetu
+        """
         return len(self.data)
 
     def __repr__(self):
@@ -91,6 +127,11 @@ class OpenImagesDataset:
         return "\n".join(content)
 
     def _read_image(self, image_id):
+        """
+        Metoda zwracajacą obraz o podanym identyfikatorze
+        :param image_id: id obrazu
+        :return: array o kształcie (row, col, 3)
+        """
         image_file = self.root / self.dataset_type / f"{image_id}.jpg"
         image = cv2.imread(str(image_file))
         if image.shape[2] == 1:
@@ -100,6 +141,9 @@ class OpenImagesDataset:
         return image
 
     def _balance_data(self):
+        """
+        Metoda balansująca dataset
+        """
         label_image_indexes = [set() for _ in range(len(self.class_names))]
         for i, image in enumerate(self.data):
             for label_id in image['labels']:

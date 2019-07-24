@@ -6,7 +6,14 @@ from skimage.measure import regionprops
 
 
 class LicensePlateDetector:
+    """
+    Klasa odpowiedzialna za detekcję tablicy rejestracyjnej na obrazie
+    """
+
     def __init__(self, plate_dimensions):
+        """
+        :param plate_dimensions: wymiary tablicy rejestracyjnej w postaci krotki (minh, maxh, minw, maxw)
+        """
         min_height, max_height, min_width, max_width = plate_dimensions
         self.min_w = min_width
         self.max_w = max_width
@@ -14,6 +21,11 @@ class LicensePlateDetector:
         self.max_h = max_height
 
     def find_candidates(self, image):
+        """
+        Metoda zwraca potencjalne tablice rejestracyjne
+        :param image: obraz w postaci array'a o kształcie (row, col, 3)
+        :return: lista dwuwymiarowych arrayów
+        """
         image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         threshold_value = threshold_isodata(image)
         binary_car_image = image > threshold_value

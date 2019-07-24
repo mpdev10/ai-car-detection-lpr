@@ -6,8 +6,24 @@ from ssd.utils import box_utils
 
 
 class Predictor:
+    """
+    Klasa służąca do obsługi sieci SSD i zwracania rezultatów detekcji
+    """
+
     def __init__(self, net, size, mean=0.0, std=1.0, nms_method=None,
                  iou_threshold=0.45, filter_threshold=0.01, candidate_size=200, sigma=0.5, device=None):
+        """
+        :param net: obiekt klasy SSD
+        :param size: rozmiar obrazu będący długością boku kwadratu
+        :param mean: średnia
+        :param std: odchylenie standardowe
+        :param nms_method: implementacja metody Non-Maximum Suppression
+        :param iou_threshold: próg dla metody Intersection over Union
+        :param filter_threshold: próg prawdopodobieństwa
+        :param candidate_size: liczba kandydatów detekcji
+        :param sigma: sigma
+        :param device: GPU
+        """
         self.net = net
         self.transform = PredictionTransform(size, mean, std)
         self.iou_threshold = iou_threshold
@@ -27,6 +43,13 @@ class Predictor:
         self.timer = Timer()
 
     def predict(self, image, top_k=-1, prob_threshold=None):
+        """
+        Metoda zwraca wynik detekcji sieci SSD
+        :param image: obraz w postaci array'a o kształcie (row, col, 3)
+        :param top_k: parametr top K metody Non-Maximum Suppression
+        :param prob_threshold: minimalny próg prawdopodobieństwa, który musi spełnić obiekt, aby zostać zwrócony
+        :return: krotka 3 tensorów: boxes, labels, probs o kształtach (n, 4), (n, 1), (n, 1)
+        """
         cpu_device = torch.device("cpu")
         height, width, _ = image.shape
         image = self.transform(image)

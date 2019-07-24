@@ -3,11 +3,24 @@ from skimage.measure import regionprops
 
 
 class CharSeg:
+    """
+    Klasa odpowiedzialna za segmentację znaków na obrazie
+    """
+
     def __init__(self, character_dimensions, padding=2):
+        """
+        :param character_dimensions: wymiary znaku w postaci array'a [minh, maxh, minw, maxw]
+        :param padding: wielkość marginesu dookoła wykrytego znaku w pikselach
+        """
         self.padding = padding
         self.character_dimensions = character_dimensions
 
     def segment_image(self, image):
+        """
+        Metoda segmentuje obraz na litery
+        :param image:
+        :return: lista krotek o postaci (img, [ymin, xmin, ymax, xmax]), gdzie img to dwuwymiarowy array
+        """
         labelled_image = measure.label(image)
         segments = []
         for region in regionprops(labelled_image):
@@ -22,6 +35,11 @@ class CharSeg:
         return segments
 
     def _is_valid_region(self, region):
+        """
+        Metoda sprawdza, czy region kwalifikuję się jako tablica rejestracyjna
+        :param region: wynik metody regionprops z skimage
+        :return: True lub False
+        """
         y0, x0, y1, x1 = region.bbox
         region_height = y1 - y0
         region_width = x1 - x0

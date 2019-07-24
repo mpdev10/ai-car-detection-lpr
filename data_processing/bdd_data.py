@@ -5,12 +5,24 @@ import cv2
 import numpy as np
 from pandas.io.json import json_normalize
 from skimage import io
+from torch.utils.data import Dataset
 
 
-class BDDFormatDataset:
+class BDDFormatDataset(Dataset):
+    """
+    Klasa obsługująca dataset utworzony w narzędziu Scalabel (https://www.scalabel.ai/)
+    """
 
     def __init__(self, root, transform=None, target_transform=None,
                  dataset_type='train', label_file=None, balance_data=False):
+        """
+        :param root: ścieżka do katalogu z plikiem sub-[typ]-dataset.json
+        :param transform: klasa aplikująca transformacje na każdy obraz w datasecie
+        :param target_transform: klasa aplikująca transformację na bounding box'y i etykiety w datasecie
+        :param dataset_type: typ datasetu; train lub test
+        :param label_file: plik, w którym wymienione są nazwy etykiet w odpowiedniej kolejności, oddzielone przecinkiem
+        :param balance_data: jeżeli True to wyrównuje liczbe obrazów w datasecie, aby było równo dla każdej z etykiet
+        """
         self.root = root
         self.transform = transform
         self.target_transform = target_transform
@@ -25,6 +37,9 @@ class BDDFormatDataset:
         self.class_stat = None
 
     def _read_data(self):
+        """
+        Metoda parsująca plik json z etykietami
+        """
         global class_names
         annotation_file = f"{self.root}/sub-{self.dataset_type}-annotations.json"
 
@@ -74,6 +89,11 @@ class BDDFormatDataset:
         return data, class_names, class_dict
 
     def _read_image(self, image_id):
+        """
+        Metoda zwracajacą obraz o podanym identyfikatorze
+        :param image_id: id obrazu
+        :return: array o kształcie (row, col, 3)
+        """
         image = io.imread(image_id)
         if image.shape[2] == 1:
             image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
@@ -82,6 +102,11 @@ class BDDFormatDataset:
         return image
 
     def get_image(self, index):
+        """
+        Metoda zwracająca obraz na podanym indeksie
+        :param index: indeks obrazu
+        :return: array o kształcie (row, col, 3)
+        """
         image_info = self.data[index]
         image = self._read_image(image_info['image_id'])
         if self.transform:
@@ -89,6 +114,11 @@ class BDDFormatDataset:
         return image
 
     def _getitem(self, index):
+        """
+        Metoda zwracająca id, obraz, bounding box'y i etykiety dla danego indeksu
+        :param index: indeks obrazu
+        :return: krotka w postaci (id, image, boxes, labels)
+        """
         image_info = self.data[index]
         image = self._read_image(image_info['image_id'])
         boxes = image_info['boxes']
@@ -100,15 +130,28 @@ class BDDFormatDataset:
         return image_info['image_id'], image, boxes, labels
 
     def __getitem__(self, index):
+        """
+        Metoda zwracająca obraz, bounding box'y i etykiety dla danego indeksu
+        :param index: indeks obrazu
+        :return: krotka array'ów o kształtach: image: (row, col, 3), boxes (n, 4), labels (n, 1)
+        """
         _, image, boxes, labels = self._getitem(index)
         return image, boxes, labels
 
     def get_annotation(self, index):
+        """
+        Metoda zwraca identyfikator i etykiety dla danego indeksu
+        :param index:
+        :return: id, (boxes, labels, is_difficult); kształty array'ów: boxes: (n, 4), labels (n, 1)
+        """
         image_id, image, boxes, labels = self._getitem(index)
         is_difficult = np.zeros(boxes.shape[0], dtype=np.uint8)
         return image_id, (boxes, labels, is_difficult)
 
     def __len__(self):
+        """
+        :return: Wielkość datasetu
+        """
         return len(self.data)
 
     def __repr__(self):
@@ -127,6 +170,9 @@ class BDDFormatDataset:
         return "\n".join(content)
 
     def _balance_data(self):
+        """
+        Metoda balansująca dataset
+        """
         label_image_indexes = [set() for _ in range(len(self.class_names))]
         for i, image in enumerate(self.data):
             for label_id in image['labels']:

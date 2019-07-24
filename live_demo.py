@@ -48,7 +48,7 @@ lpr = LPR(char_seg, plate_detector, cnn, dataset)
 
 frame_skip = 0
 
-car_system = CarSystem(net, predictor, state_qualifier, car_tracker,
+car_system = CarSystem(predictor, state_qualifier, car_tracker,
                        lpr, frame_skip, 20, 0.3)
 
 while True:

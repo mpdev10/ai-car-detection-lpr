@@ -5,6 +5,9 @@ import torch.nn.functional as F
 
 
 class MobileNetV1(nn.Module):
+    """
+    Klasa implementująca sieć mobilenet v1
+    """
     def __init__(self, num_classes=1024):
         super(MobileNetV1, self).__init__()
 

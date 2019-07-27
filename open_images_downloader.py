@@ -70,12 +70,12 @@ def parse_args():
 
     parser.add_argument("--root", type=str,
                         help='The root directory that you want to store the open image data.')
-    parser.add_argument("include_depiction", action="store_true",
+    parser.add_argument("--include_depiction", action="store_true",
                         help="Do you want to include drawings or depictions?")
     parser.add_argument("--class_names", type=str,
                         help="the classes you want to download.")
     parser.add_argument("--num_workers", type=int, default=10,
-                        help="the classes you want to download.")
+                        help="number of workers.")
     parser.add_argument("--retry", type=int, default=10,
                         help="retry times when downloading.")
     parser.add_argument("--filter_file", type=str, default="",

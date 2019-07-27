@@ -21,8 +21,8 @@ parser = argparse.ArgumentParser(
     description='Single Shot MultiBox Detector Training With Pytorch')
 
 # Dataset type
-parser.add_argument('--train_datatype', nargs='+', help='Training dataset types. Possible options: bdd, open_images');
-parser.add_argument('--validation_datatype', help='Validation dataset type. Possible options: bdd, open_images');
+parser.add_argument('--train_datatype', nargs='+', help='Training dataset types. Possible options: bdd, open_images')
+parser.add_argument('--validation_datatype', help='Validation dataset type. Possible options: bdd, open_images')
 
 parser.add_argument('--datasets', nargs='+', help='Dataset directory path')
 parser.add_argument('--validation_dataset', help='Dataset directory path')
@@ -109,7 +109,7 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
 
         optimizer.zero_grad()
         confidence, locations = net(images)
-        regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)  # TODO CHANGE BOXES
+        regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)
         loss = regression_loss + classification_loss
         loss.backward()
         optimizer.step()

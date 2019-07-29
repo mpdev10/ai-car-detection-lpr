@@ -24,7 +24,7 @@ class LicensePlateDetector:
         """
         Metoda zwraca potencjalne tablice rejestracyjne
         :param image: obraz w postaci array'a o kształcie (row, col, 3)
-        :return: lista dwuwymiarowych arrayów
+        :return: lista krotek złożonych dwuwymiarowych arrayów i koordynatów wykrytych kandydatów
         """
         image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         threshold_value = threshold_isodata(image)

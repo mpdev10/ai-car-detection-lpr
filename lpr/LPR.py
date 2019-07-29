@@ -46,8 +46,10 @@ class LPR:
                 for i in range(len(segments)):
                     segment = segments[i]
                     y0, x0, y1, x1 = segment[1]
-                    reshaped = cv2.resize(segment[0].astype(np.float32), (self.char_w, self.char_h))
+                    reshaped = cv2.resize(segment[0], (self.char_w, self.char_h))
+
                     ret = np.asarray(self.model(torch.Tensor(reshaped)).detach())
+                    cv2.imshow('a', reshaped)
                     chars.append(self.dataset.class_dict[np.argmax(ret)])
                     column_list.append(x0)
                 for i in np.argsort(column_list):

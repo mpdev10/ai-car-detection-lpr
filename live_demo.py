@@ -43,7 +43,7 @@ dataset = CharDataset(root='dataset', label_file='labels.txt', multiply=0)
 s_dict = torch.load('models/cnn.ckpt', map_location=lambda storage, loc: storage)
 cnn = CNN(num_classes=35)
 cnn.load_state_dict(s_dict)
-char_seg: CharSeg = CharSeg((10, 50, 5, 20))
+char_seg: CharSeg = CharSeg((10, 40, 7, 20))
 lpr = LPR(char_seg, plate_detector, cnn, dataset)
 
 frame_skip = 0
@@ -71,8 +71,6 @@ while True:
                 color = (0, 0, 255)
             if state_dict[ids[i]] == 'ARRIVED':
                 color = (0, 255, 40)
-                roi = image[box[1]:box[3], box[0]:box[2]]
-                candidates = lpr.perform_ocr(roi)
         else:
             label = f"{class_names[labels[i]]}: {probabilities[i]:.2f}"
 

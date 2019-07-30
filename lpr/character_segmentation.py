@@ -32,6 +32,11 @@ class CharSeg:
         return self._prepare_boxes(gray, fixed_boxes)
 
     def _get_proper_boxes(self, props):
+        """
+        Metoda dokonuje korekcji na otrzymanych regionach
+        :param props: wynik metody regionprops
+        :return: lista krotek (y0, x0, y1, x1)
+        """
         global prev_region
         props.sort(key=lambda x: x.centroid[1])
         regions = []
@@ -70,7 +75,7 @@ class CharSeg:
         """
         Metoda przygotowuje regiony, dodając do nich margines (padding)
         :param regions: wynik metody regionprops
-        :return: krotka (image, bbox)
+        :return: lista krotek (image, bbox)
         """
         segments = []
         for bbox in boxes:

@@ -49,7 +49,7 @@ class CarSystem:
         listę potencjalnych odczytów tablicy rejestracyjnej i słownik tłumaczący indeks samochodu na obecny stan
         :param image: obraz w formacie rgb w postaci array'a o kształcie (row, col, 3)
         :return: identyfikatory, bounding boxy, etykiety, prawdopodobieństwa,
-        listę potencjalnych odczytów tablicy rejestracyjnej i słownik tłumaczący indeks samochodu na obecny stan
+        procent pasujących znaków podanej tablicy rejestracyjnej i słownik tłumaczący indeks samochodu na obecny stan
         """
         if self.frame_counter == 0 and determine_light_on(image, self.light_level_th):
             prediction = self.detection_predictor.predict(image, 15, self.prob_th)

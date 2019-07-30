@@ -54,7 +54,7 @@ class LPR:
         """
         Metoda zwraca odczyty znaków z potencjalnych wykrytych tablic rejestracyjnych
         :param image: obraz w postaci array'a o kształcie (row, col, 3)
-        :return: jednowymiarowy array stringów
+        :return: lista list słowników, gdzie wartość slownik[char] oznacza miejsce char pod względem prawdopodobieństwa
         """
         candidates = self.plate_detector.find_candidates(image)
         possible_platenums = []
@@ -71,11 +71,21 @@ class LPR:
         return possible_platenums
 
     def _classify(self, image):
+        """
+        Prywatna metoda dokonująca klasyfikacji obrazu
+        :param image: obraz w postaci dwuwymiarowego array'a
+        :return: tensor.Torch, gdzie wartosć z tensora[i] oznacza prawdopodobieństwo, że znak na obrazie jest klasy i
+        """
         reshaped = cv2.resize(image, (self.char_w, self.char_h))
         reshaped = np.invert(reshaped)
         return self.model(torch.Tensor(reshaped))
 
     def _char_map(self, tensor_output):
+        """
+        Zwraca mapę, która przypisuje literom ich miejsce pod względem prawdopodobieństwa
+        :param tensor_output: tensor.Torch - wynik metody _classify
+        :return: mapa/słownik
+        """
         ret = np.flip(np.argsort(np.asarray(tensor_output.detach())).flatten())
         ret = [self._get_character(x) for x in ret]
         charMap = {}
@@ -84,5 +94,10 @@ class LPR:
         return charMap
 
     def _get_character(self, num):
+        """
+        Zwraca znak odpowiadający podanemu numerowi klasy
+        :param num: indeks klasy
+        :return: znak/char
+        """
         ret = self.dataset.class_dict[num]
         return ret

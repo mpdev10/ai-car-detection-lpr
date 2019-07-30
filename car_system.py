@@ -86,13 +86,13 @@ class CarSystem:
         for i in range(0, boxes.shape[0]):
             if self.state_dict[ids[i]] == 'ARRIVED':
                 parked_ind = i
+                break
 
-            if parked_ind != - 1:
-                box = boxes[parked_ind]
-                roi = image[int(box[1]):int(box[3]), int(box[0]):int(box[2])]
-                matching = self.lpr.check_license_plate(roi, self.license_plate_number)
-                print(matching)
-                if not self.car_is_parked and matching >= self.matching_chars_percentage_th:
-                    self.car_is_parked = True
-            else:
-                self.car_is_parked = False
+        if parked_ind != - 1:
+            box = boxes[parked_ind]
+            roi = image[int(box[1]):int(box[3]), int(box[0]):int(box[2])]
+            matching = self.lpr.check_license_plate(roi, self.license_plate_number)
+            if not self.car_is_parked and matching >= self.matching_chars_percentage_th:
+                self.car_is_parked = True
+        else:
+            self.car_is_parked = False

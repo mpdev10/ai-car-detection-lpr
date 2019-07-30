@@ -57,11 +57,11 @@ while True:
         continue
     image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB)
     timer.start()
-    ids, boxes, labels, probabilities, plate, state_dict = car_system.handle_frame(image)
+    ids, boxes, labels, probabilities, state_dict, is_parked = car_system.handle_frame(image)
     interval = timer.end()
     print('Time: {:.2f}s, Detect Objects: {:d}.'.format(interval, labels.shape[0]))
-    if plate > 0.5:
-        print('Plate found attached to parked car. Matching percentage: ' + str(plate))
+    if is_parked:
+        print('Plate found attached to parked car.')
     for i in range(boxes.shape[0]):
         box = boxes[i, :].astype(int)
         color = (255, 255, 0)

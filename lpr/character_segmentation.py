@@ -57,9 +57,13 @@ class CharSeg:
                     fy1 = (y1 + py1) / 2
                     new_bbox = int(fy0), int(fx0), int(fy1), int(fx1)
                     boxes.append(new_bbox)
+                if dist > 5:
+                    boxes.append(region.bbox)
+            else:
+                boxes.append(region.bbox)
             prev_x = region.centroid[1]
             prev_region = region
-            boxes.append(region.bbox)
+
         return boxes
 
     def _prepare_boxes(self, image, boxes):
@@ -78,6 +82,7 @@ class CharSeg:
                 x1 = x1 + self.padding if x1 + self.padding < image.shape[1] else image.shape[1] - 1
                 segment = image[y0:y1, x0:x1], bbox
                 segments.append(segment)
+        segments.sort(key=lambda x: x[1][1])
         return segments
 
     def _is_valid_region(self, bbox):

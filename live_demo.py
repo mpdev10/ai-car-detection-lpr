@@ -41,15 +41,15 @@ car_tracker = ObjectTracker(class_names)
 plate_detector = LicensePlateDetector((20, 100, 100, 500))
 dataset = CharDataset(root='dataset', label_file='labels.txt', multiply=0)
 s_dict = torch.load('models/cnn.ckpt', map_location=lambda storage, loc: storage)
-cnn = CNN(num_classes=35)
+cnn = CNN(num_classes=36)
 cnn.load_state_dict(s_dict)
-char_seg: CharSeg = CharSeg((10, 40, 7, 20))
+char_seg: CharSeg = CharSeg((15, 40, 7, 20), padding=1)
 lpr = LPR(char_seg, plate_detector, cnn, dataset)
 
 frame_skip = 0
 
 car_system = CarSystem(predictor, state_qualifier, car_tracker,
-                       lpr, frame_skip, 20, 0.3)
+                       lpr, frame_skip, 20, 0.3, "______")
 
 while True:
     ret, orig_image = cap.read()
@@ -59,9 +59,9 @@ while True:
     timer.start()
     ids, boxes, labels, probabilities, plate, state_dict = car_system.handle_frame(image)
     interval = timer.end()
-    # print('Time: {:.2f}s, Detect Objects: {:d}.'.format(interval, labels.shape[0]))
-    if len(plate) > 0:
-        print('Plate found: ' + str(plate))
+    print('Time: {:.2f}s, Detect Objects: {:d}.'.format(interval, labels.shape[0]))
+    if plate > 0.5:
+        print('Plate found attached to parked car. Matching percentage: ' + str(plate))
     for i in range(boxes.shape[0]):
         box = boxes[i, :].astype(int)
         color = (255, 255, 0)

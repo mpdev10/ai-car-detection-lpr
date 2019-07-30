@@ -13,13 +13,14 @@ class LPR:
     """
 
     def __init__(self, char_seg: CharSeg, plate_detector: LicensePlateDetector, model: CNN,
-                 dataset, input_dim=(24, 32)):
+                 dataset, input_dim=(24, 32), max_char_place=4):
         """
         :param char_seg: instancja klasy CharSeg do segmentacji obrazu na znaki
         :param plate_detector: instancja klasy LicensePlateDetector do wykrywania rejestracji
         :param model: model sieci neuronowej do klasyfikacji znaków
         :param dataset: dataset posiadający słownik, który tłumaczy liczby na nazwy klas
         :param input_dim: krotka w postaci (w, h), gdzie w to szerokość, a h wysokość litery; domyślnie (24, 32)
+        :param max_char_place: maksymalne miejsce, które może zajmować znak, aby być uznany za pasujący
         """
         self.char_seg = char_seg
         self.plate_detector = plate_detector
@@ -27,8 +28,29 @@ class LPR:
         self.dataset = dataset
         self.char_w = input_dim[0]
         self.char_h = input_dim[1]
+        self.max_char_place = max_char_place
 
-    def perform_ocr(self, image):
+    def check_license_plate(self, image, plate_str):
+        candidateList = self._perform_ocr(image)
+        max_matching_chars = 0
+        for candidate in candidateList:
+            matching_chars = 0
+            i = 0
+            j = 0
+            while j < len(plate_str):
+                pchar = plate_str[j]
+                if i >= len(candidate):
+                    break
+                if candidate[i][pchar] < self.max_char_place:
+                    matching_chars = matching_chars + 1
+                    j = j + 1
+                i = i + 1
+            if matching_chars > max_matching_chars:
+                max_matching_chars = matching_chars
+
+        return max_matching_chars / len(plate_str)
+
+    def _perform_ocr(self, image):
         """
         Metoda zwraca odczyty znaków z potencjalnych wykrytych tablic rejestracyjnych
         :param image: obraz w postaci array'a o kształcie (row, col, 3)
@@ -39,20 +61,28 @@ class LPR:
         for candidate in candidates:
             plate_img, _ = candidate
             segments = self.char_seg.segment_image(plate_img)
-            if len(segments) > 3:
+            if len(segments) > 6:
                 chars = []
-                column_list = []
-                txt = ''
                 for i in range(len(segments)):
                     segment = segments[i]
-                    y0, x0, y1, x1 = segment[1]
-                    reshaped = cv2.resize(segment[0], (self.char_w, self.char_h))
-
-                    ret = np.asarray(self.model(torch.Tensor(reshaped)).detach())
-                    cv2.imshow('a', reshaped)
-                    chars.append(self.dataset.class_dict[np.argmax(ret)])
-                    column_list.append(x0)
-                for i in np.argsort(column_list):
-                    txt = txt + chars[i]
-                possible_platenums.append(txt)
+                    tensor_output = self._classify(segment[0])
+                    chars.append(self._char_map(tensor_output))
+                possible_platenums.append(chars)
         return possible_platenums
+
+    def _classify(self, image):
+        reshaped = cv2.resize(image, (self.char_w, self.char_h))
+        reshaped = np.invert(reshaped)
+        return self.model(torch.Tensor(reshaped))
+
+    def _char_map(self, tensor_output):
+        ret = np.flip(np.argsort(np.asarray(tensor_output.detach())).flatten())
+        ret = [self._get_character(x) for x in ret]
+        charMap = {}
+        for i in range(0, len(ret)):
+            charMap[ret[i]] = i
+        return charMap
+
+    def _get_character(self, num):
+        ret = self.dataset.class_dict[num]
+        return ret

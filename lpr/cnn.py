@@ -45,5 +45,5 @@ class CNN(nn.Module):
 
         x = x.view(-1, self.linear_size)
         x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
+        x = F.log_softmax(self.fc2(x), dim=1)
         return x

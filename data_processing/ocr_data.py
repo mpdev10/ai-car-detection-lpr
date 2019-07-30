@@ -2,23 +2,26 @@ import os
 
 import imgaug as ia
 import numpy as np
+from cv2 import cv2
 from imgaug import augmenters as iaa
 from skimage.io import imread
 from torch.utils.data import Dataset
 
-sometimes = lambda aug: iaa.Sometimes(0.5, aug)
+sometimes = lambda aug: iaa.Sometimes(0.95, aug)
 
 seq = iaa.Sequential(
-    [iaa.Invert(0.5),
-     sometimes(iaa.Affine(
-         scale={"x": (0.5, 1.0), "y": (0.5, 1.0)},
-         translate_percent={"x": (-0.05, 0.05), "y": (-0.05, 0.05)},
-         rotate=(-2, 2),
-         shear=(0, 0)
-     )),
-     sometimes(iaa.Dropout(0.1, 0.3)),
-     sometimes(iaa.GaussianBlur(1))
-     ])
+    [
+        iaa.Affine(
+            scale={"x": (0.3, 1.4), "y": (0.3, 1.4)},
+            rotate=(-20, 20)
+        ),
+        sometimes([
+            iaa.Invert(0.5),
+            iaa.Dropout((0, 0.4)),
+            iaa.PerspectiveTransform(scale=(0.01, 0.02)),
+            iaa.GaussianBlur((0, 1.5))])
+
+    ])
 
 
 class CharDataset(Dataset):
@@ -51,11 +54,13 @@ class CharDataset(Dataset):
         return np.shape(self.data[0])[0]
 
     def _read_data(self):
-        image = imread(self.root + '/charset.png', as_gray=True)
+        image = imread(self.root + '/charset.png')
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         char_num = np.shape(image)[1] / self.char_w
-        image = image.astype(np.float32)
         images = np.hsplit(image, char_num)
-        images = np.reshape(images, (-1, 1, self.char_h, self.char_w))
+        images = np.reshape(images, (-1, self.char_h, self.char_w))
+        cv2.waitKey(0)
+
         labels = np.arange(np.shape(images)[0])
         data = images, labels
         label_file_name = f"{self.root}/{self.label_file}"
@@ -73,7 +78,7 @@ class CharDataset(Dataset):
         return data, class_names, class_dict
 
     def _multiply(self, num):
-        ia.seed(np.random.randint(100000, size=1)[0])
+
         images, labels = self.data
         img, lab = images, labels
         for i in range(0, num):
@@ -83,5 +88,7 @@ class CharDataset(Dataset):
         self.data = images, labels
 
     def _augment(self, images):
+        ia.seed(np.random.randint(9999999, size=1)[0])
         images = seq.augment_images(images)
+        images = np.reshape(images, (-1, 1, self.char_h, self.char_w))
         return images

@@ -10,7 +10,7 @@ from lpr.cnn import CNN
 parser = argparse.ArgumentParser(
     description='Convolutional Neural Network Training Wiseq.augment_imagesth Pytorch')
 
-parser.add_argument('--num_epochs', default=45, type=int, help='The number of epochs')
+parser.add_argument('--num_epochs', default=10, type=int, help='The number of epochs')
 parser.add_argument('--batch_size', default=16, type=int, help='Batch size for training')
 parser.add_argument('--learning_rate', default=0.001, type=float, help='Learning rate for training')
 parser.add_argument('--dataset', type=str, default='dataset', help='Path of dataset')
@@ -18,6 +18,7 @@ parser.add_argument('--store_path', type=str, default='models/', help='Path to s
 parser.add_argument('--use_cuda', type=bool, default=True)
 parser.add_argument('--model', default=None, type=str)
 parser.add_argument('--imgaug', default=True)
+parser.add_argument('--mult', default=2000)
 
 args = parser.parse_args()
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() and args.use_cuda else "cpu")
@@ -27,10 +28,15 @@ if args.use_cuda and torch.cuda.is_available():
     print("Use Cuda.")
 
 if __name__ == '__main__':
-    train_dataset = CharDataset(root=args.dataset, label_file='labels.txt', multiply=1000)
+    mult = 0
+    if args.imgaug:
+        mult = args.mult
+    print("Preparing train dataset..")
+    train_dataset = CharDataset(root=args.dataset, label_file='labels.txt', multiply=mult)
+    test_dataset = CharDataset(root=args.dataset, label_file='labels.txt', multiply=3)
     train_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, shuffle=True)
-    test_loader = DataLoader(dataset=train_dataset, batch_size=args.batch_size, shuffle=False)
-    model = CNN(num_classes=35)
+    test_loader = DataLoader(dataset=test_dataset, batch_size=args.batch_size, shuffle=False)
+    model = CNN(num_classes=36)
 
     if args.model is not None:
         state_dict = torch.load(args.model, map_location=lambda storage, loc: storage)
@@ -38,9 +44,9 @@ if __name__ == '__main__':
         print("Loaded model: " + args.model)
 
     model.to(DEVICE)
-
+    print("Starting training of the model..")
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=args.learning_rate)
+    optimizer = optim.SGD(model.parameters(), lr=args.learning_rate, weight_decay=0.1)
 
     total_step = len(train_loader)
     loss_list = []
@@ -49,6 +55,11 @@ if __name__ == '__main__':
 
     for epoch in range(args.num_epochs):
         for i, (images, labels) in enumerate(train_loader):
+
+            # img = images.numpy()[0][0]
+            # cv2.imshow('letter', img)
+            # cv2.waitKey(0)
+
             images = images.to(DEVICE, dtype=torch.float)
             labels = labels.to(DEVICE)
             outputs = model(images)

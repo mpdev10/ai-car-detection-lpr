@@ -38,7 +38,7 @@ class CarSystem:
         self.boxes = np.array([])
         self.labels = np.array([])
         self.probabilities = np.array([])
-        self.light_on = True
+        self.light_on = False
         self.plates = []
 
     def handle_frame(self, image):
@@ -51,7 +51,7 @@ class CarSystem:
         """
 
         if self.frame_counter == 0:
-            light_on = determine_light_on(image, self.light_level_th)
+            self.light_on = determine_light_on(image, self.light_level_th)
             if self.light_on:
                 prediction = self.detection_predictor.predict(image, 15, self.prob_th)
                 if prediction[0].size(0) > 0:

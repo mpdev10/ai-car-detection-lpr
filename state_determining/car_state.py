@@ -36,7 +36,7 @@ class StateQualifier:
         for i in range(centroids.shape[0]):
             state_dict[ids[i]] = ""
             if ids[i] in prev_dict:
-                if euclidean_distance(centroids[i], prev_dict[ids[i]]) > 20:
+                if euclidean_distance(centroids[i], prev_dict[ids[i]]) > 5:
                     state_dict[ids[i]] = "MOVE"
             if ids[i] == self.last_left_id:
                 state_dict[ids[i]] = "LEFT"

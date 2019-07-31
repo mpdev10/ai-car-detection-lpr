@@ -14,8 +14,7 @@ class CarSystem:
 
     def __init__(self,
                  detection_predictor: Predictor, state_qualifier: StateQualifier,
-                 car_tracker: ObjectTracker, lpr: LPR, frame_skip, light_level_th, prob_th,
-                 license_plate_number, matching_chars_percentage_th=0.75):
+                 car_tracker: ObjectTracker, lpr: LPR, frame_skip, light_level_th, prob_th):
         """
         Konstruktor klasy CarSystem
         :param detection_predictor: predyktor, który służy do detekcji obiektów
@@ -25,8 +24,6 @@ class CarSystem:
         :param frame_skip: liczba klatek, która ma byc pomijana
         :param light_level_th: próg światła, poniżej którego klatka jest ignorowana
         :param prob_th: próg prawdopodobieństwa, poniżej którego obiekt nie jest brany pod uwage
-        :param license_plate_number: numer tablicy rejestracyjnej, który ma być śledzony przez system
-        :param matching_chars_percentage_th: minimalny % dopasowanych znaków, aby tablica została uznana za znalezioną
         """
         self.detection_predictor = detection_predictor
         self.state_qualifier = state_qualifier
@@ -41,9 +38,8 @@ class CarSystem:
         self.boxes = np.array([])
         self.labels = np.array([])
         self.probabilities = np.array([])
-        self.license_plate_number = license_plate_number
-        self.matching_chars_percentage_th = matching_chars_percentage_th
-        self.car_is_parked = False
+        self.light_on = True
+        self.plates = []
 
     def handle_frame(self, image):
         """
@@ -53,27 +49,37 @@ class CarSystem:
         :param image: obraz w formacie rgb w postaci array'a o kształcie (row, col, 3)
         :return: identyfikatory, bounding boxy, etykiety, float, słownik, true/false
         """
-        if self.frame_counter == 0 and determine_light_on(image, self.light_level_th):
-            prediction = self.detection_predictor.predict(image, 15, self.prob_th)
-            if prediction[0].size(0) > 0:
-                cars, other, self.ids = self.car_tracker.track('car', prediction)
 
-                self.state_dict = self.state_qualifier.get_state_dict(cars[0],
-                                                                      self.ids,
-                                                                      self.car_tracker.prev_values[0],
-                                                                      self.car_tracker.prev_values[1])
-                self.boxes = np.vstack((cars[0], other[0]))
-                self.labels = np.concatenate((cars[1], other[1]))
-                self.probabilities = np.concatenate((cars[2], other[2]))
-                self._parked_plate_match(cars, self.ids, image)
+        if self.frame_counter == 0:
+            light_on = determine_light_on(image, self.light_level_th)
+            if self.light_on:
+                prediction = self.detection_predictor.predict(image, 15, self.prob_th)
+                if prediction[0].size(0) > 0:
+                    cars, other, self.ids = self.car_tracker.track('car', prediction)
+
+                    self.state_dict = self.state_qualifier.get_state_dict(cars[0],
+                                                                          self.ids,
+                                                                          self.car_tracker.prev_values[0],
+                                                                          self.car_tracker.prev_values[1])
+                    self.boxes = np.vstack((cars[0], other[0]))
+                    self.labels = np.concatenate((cars[1], other[1]))
+                    self.probabilities = np.concatenate((cars[2], other[2]))
+                    self.plates = self._get_plate(cars, self.ids, image)
+            else:
+                self.ids = np.array([])
+                self.boxes = np.array([])
+                self.labels = np.array([])
+                self.probabilities = np.array([])
+                self.state_dict = {}
 
         self.frame_counter = self.frame_counter + 1
         if self.frame_counter >= self.frame_skip:
             self.frame_counter = 0
 
-        return self.ids, self.boxes, self.labels, self.probabilities, self.state_dict, self.car_is_parked
+        return self.ids, self.boxes, self.labels, self.probabilities, \
+               self.state_dict, self.plates, self.light_on
 
-    def _parked_plate_match(self, cars, ids, image):
+    def _get_plate(self, cars, ids, image):
 
         """
         Prywatna metoda sprawdzająca dopasowanie odczytu tablicy rejestracyjnej
@@ -83,6 +89,7 @@ class CarSystem:
         """
         boxes, _, _ = cars
         parked_ind = -1
+        plate = []
         for i in range(0, boxes.shape[0]):
             if self.state_dict[ids[i]] == 'ARRIVED':
                 parked_ind = i
@@ -91,8 +98,5 @@ class CarSystem:
         if parked_ind != - 1:
             box = boxes[parked_ind]
             roi = image[int(box[1]):int(box[3]), int(box[0]):int(box[2])]
-            matching = self.lpr.check_license_plate(roi, self.license_plate_number)
-            if not self.car_is_parked and matching >= self.matching_chars_percentage_th:
-                self.car_is_parked = True
-        else:
-            self.car_is_parked = False
+            plate = self.lpr.get_license_plate(roi)
+        return plate

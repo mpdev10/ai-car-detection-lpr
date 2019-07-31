@@ -66,24 +66,24 @@ class ObjectTracker:
             prev_centroids = centroid.compute_centroids(prev_boxes)
             ids = np.ones(centroids.shape[0], dtype=int) * (-1)
             centroids_indexes = np.arange(0, centroids.shape[0])
-            for i in range(prev_centroids.shape[0]):
-                shortest_distance = centroid.euclidean_distance(prev_centroids[i], centroids[centroids_indexes[0]])
-                shortest_distance_centroid_index = centroids_indexes[0]
-                index_count = 0
-                current_list_index = 0
-                for j in centroids_indexes:
-                    distance = centroid.euclidean_distance(prev_centroids[i], centroids[j])
-                    if distance < shortest_distance:
-                        shortest_distance = distance
-                        shortest_distance_centroid_index = j
-                        current_list_index = index_count
-                    index_count = index_count + 1
-                ids[shortest_distance_centroid_index] = prev_ids[i]
-                centroids_indexes = np.delete(centroids_indexes, current_list_index)
-                if centroids_indexes.size == 0:
-                    break
-            for i in range(ids.shape[0]):
-                if ids[i] == -1:
-                    ids[i] = np.max(ids) + 1 if np.min(np.abs(ids)) <= 0 else np.min(np.abs(ids)) - 1
-
+            if len(centroids) > 0:
+                for i in range(prev_centroids.shape[0]):
+                    shortest_distance = centroid.euclidean_distance(prev_centroids[i], centroids[centroids_indexes[0]])
+                    shortest_distance_centroid_index = centroids_indexes[0]
+                    index_count = 0
+                    current_list_index = 0
+                    for j in centroids_indexes:
+                        distance = centroid.euclidean_distance(prev_centroids[i], centroids[j])
+                        if distance < shortest_distance:
+                            shortest_distance = distance
+                            shortest_distance_centroid_index = j
+                            current_list_index = index_count
+                        index_count = index_count + 1
+                    ids[shortest_distance_centroid_index] = prev_ids[i]
+                    centroids_indexes = np.delete(centroids_indexes, current_list_index)
+                    if centroids_indexes.size == 0:
+                        break
+                for i in range(ids.shape[0]):
+                    if ids[i] == -1:
+                        ids[i] = np.max(ids) + 1 if np.min(np.abs(ids)) <= 0 else np.min(np.abs(ids)) - 1
         return boxes, ids

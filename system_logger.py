@@ -17,8 +17,6 @@ parser = argparse.ArgumentParser(
     description='Text Logger Script'
 )
 
-parser.add_argument('--license_plate')
-
 parser.add_argument('--use_cuda', action='store_true')
 parser.add_argument('--ssd', default='models/SSD-Model.pth')
 parser.add_argument('--ssd_labels', default='models/labels.txt')
@@ -70,32 +68,32 @@ if __name__ == '__main__':
     lpr = LPR(char_seg, plate_detector, cnn_net, ocr_dataset)
 
     car_system = CarSystem(ssd_predictor, state_qualifier, tracker, lpr, args.frame_skip,
-                           args.light_th, args.ssd_prob_th, args.license_plate)
+                           args.light_th, args.ssd_prob_th)
 
     frame_num = 0
+    lights = True
     while True:
         _, orig_image = cap.read()
         if orig_image is None:
             break
         image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB)
-        ids, boxes, labels, probabilities, state_dict, is_parked = car_system.handle_frame(image)
+        ids, boxes, labels, probabilities, state_dict, plates, l_on = car_system.handle_frame(image)
+        if l_on and not lights:
+            lights = True
+        elif not l_on and lights:
+            lights = False
         print("Frame:", frame_num)
-        print("Found", boxes.shape[0], "objects,", ids.shape[0], "of them are cars")
+        print("LIGHTS", "ON" if l_on else "OFF")
+        if lights:
+            print("Found", boxes.shape[0], "objects,", ids.shape[0], "of them are cars")
 
-        for i in range(0, boxes.shape[0]):
-            if i < ids.shape[0]:
-                print('Car ID:', ids[i], "box:", boxes[i])
-            else:
-                print('Object box:', boxes[i])
-
-        for id in ids:
-            if state_dict[id] == 'ARRIVED':
-                print("Found car with ID:", id, 'ARRIVED')
-                if is_parked:
-                    print("LICENSE_PLATE: IDENTIFIED")
-            elif state_dict[id] == 'LEFT':
-                print("Found car with ID:", id, 'LEFT')
-
-        print("")
+            for i in range(0, boxes.shape[0]):
+                if i < ids.shape[0]:
+                    if state_dict[ids[i]] == "ARRIVED":
+                        print('Car ID:', ids[i], "box:", boxes[i], "state:", state_dict[ids[i]], "plate:", plates)
+                    else:
+                        print('Car ID:', ids[i], "box:", boxes[i], "state:", state_dict[ids[i]])
+                else:
+                    print('Object box:', boxes[i])
         frame_num = frame_num + 1
     cap.release()

@@ -30,43 +30,27 @@ class LPR:
         self.char_h = input_dim[1]
         self.max_char_place = max_char_place
 
-    def check_license_plate(self, image, plate_str):
+    def get_license_plate(self, image):
         candidateList = self._perform_ocr(image)
-        max_matching_chars = 0
-        for candidate in candidateList:
-            matching_chars = 0
-            i = 0
-            j = 0
-            while j < len(plate_str):
-                pchar = plate_str[j]
-                if i >= len(candidate):
-                    break
-                if candidate[i][pchar] < self.max_char_place:
-                    matching_chars = matching_chars + 1
-                    j = j + 1
-                i = i + 1
-            if matching_chars > max_matching_chars:
-                max_matching_chars = matching_chars
-
-        return max_matching_chars / len(plate_str)
+        return candidateList
 
     def _perform_ocr(self, image):
         """
         Metoda zwraca odczyty znaków z potencjalnych wykrytych tablic rejestracyjnych
         :param image: obraz w postaci array'a o kształcie (row, col, 3)
-        :return: lista list słowników, gdzie wartość slownik[char] oznacza miejsce char pod względem prawdopodobieństwa
+        :return: lista stringów
         """
         candidates = self.plate_detector.find_candidates(image)
         possible_platenums = []
         for candidate in candidates:
             plate_img, _ = candidate
             segments = self.char_seg.segment_image(plate_img)
-            if len(segments) > 6:
-                chars = []
+            if 9 > len(segments) > 6:
+                chars = ""
                 for i in range(len(segments)):
                     segment = segments[i]
                     tensor_output = self._classify(segment[0])
-                    chars.append(self._char_map(tensor_output))
+                    chars = chars + self._get_character(np.argmax(tensor_output.detach().numpy()))
                 possible_platenums.append(chars)
         return possible_platenums
 
@@ -79,19 +63,6 @@ class LPR:
         reshaped = cv2.resize(image, (self.char_w, self.char_h))
         reshaped = np.invert(reshaped)
         return self.model(torch.Tensor(reshaped))
-
-    def _char_map(self, tensor_output):
-        """
-        Zwraca mapę, która przypisuje literom ich miejsce pod względem prawdopodobieństwa
-        :param tensor_output: tensor.Torch - wynik metody _classify
-        :return: mapa/słownik
-        """
-        ret = np.flip(np.argsort(np.asarray(tensor_output.detach())).flatten())
-        ret = [self._get_character(x) for x in ret]
-        charMap = {}
-        for i in range(0, len(ret)):
-            charMap[ret[i]] = i
-        return charMap
 
     def _get_character(self, num):
         """

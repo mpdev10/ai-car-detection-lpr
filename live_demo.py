@@ -49,7 +49,7 @@ lpr = LPR(char_seg, plate_detector, cnn, dataset)
 frame_skip = 0
 
 car_system = CarSystem(predictor, state_qualifier, car_tracker,
-                       lpr, frame_skip, 20, 0.3, "______")
+                       lpr, frame_skip, 20, 0.3)
 
 while True:
     ret, orig_image = cap.read()
@@ -57,16 +57,15 @@ while True:
         continue
     image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB)
     timer.start()
-    ids, boxes, labels, probabilities, state_dict, is_parked = car_system.handle_frame(image)
+    ids, boxes, labels, probabilities, state_dict, plate, light_on = car_system.handle_frame(image)
     interval = timer.end()
-    print('Time: {:.2f}s, Detect Objects: {:d}.'.format(interval, labels.shape[0]))
-    if is_parked:
-        print('Plate found attached to parked car.')
     for i in range(boxes.shape[0]):
         box = boxes[i, :].astype(int)
         color = (255, 255, 0)
         if i < ids.shape[0] and state_dict is not None:
             label = f"{class_names[labels[i]]}: {probabilities[i]:.2f} {state_dict[ids[i]]}"
+            if state_dict[ids[i]] == 'MOVE':
+                color = (255, 255, 0)
             if state_dict[ids[i]] == 'LEFT':
                 color = (0, 0, 255)
             if state_dict[ids[i]] == 'ARRIVED':

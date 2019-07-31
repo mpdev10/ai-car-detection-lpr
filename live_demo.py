@@ -50,6 +50,8 @@ frame_skip = 0
 
 car_system = CarSystem(predictor, state_qualifier, car_tracker,
                        lpr, frame_skip, 20, 0.3)
+lights = False
+frame_n = 0
 
 while True:
     ret, orig_image = cap.read()
@@ -59,6 +61,23 @@ while True:
     timer.start()
     ids, boxes, labels, probabilities, state_dict, plate, light_on = car_system.handle_frame(image)
     interval = timer.end()
+    if light_on and not lights:
+        lights = True
+    elif not light_on and lights:
+        lights = False
+    print("Frame:", frame_n)
+    print("LIGHTS", "ON" if light_on else "OFF")
+    if lights:
+        print("Found", boxes.shape[0], "objects,", ids.shape[0], "of them are cars")
+
+        for i in range(0, boxes.shape[0]):
+            if i < ids.shape[0]:
+                if state_dict[ids[i]] == "ARRIVED":
+                    print('Car ID:', ids[i], "box:", boxes[i], "state:", state_dict[ids[i]], "plate:", plates)
+                else:
+                    print('Car ID:', ids[i], "box:", boxes[i], "state:", state_dict[ids[i]])
+            else:
+                print('Object box:', boxes[i])
     for i in range(boxes.shape[0]):
         box = boxes[i, :].astype(int)
         color = (255, 255, 0)
@@ -83,6 +102,7 @@ while True:
                     2,
                     cv2.LINE_AA)
     cv2.imshow('annotated', orig_image)
+    frame_n = frame_n + 1
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 

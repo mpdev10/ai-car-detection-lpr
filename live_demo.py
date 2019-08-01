@@ -59,7 +59,7 @@ while True:
         continue
     image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB)
     timer.start()
-    ids, boxes, labels, probabilities, state_dict, plate, light_on = car_system.handle_frame(image)
+    ids, boxes, labels, probabilities, state_dict, plates, light_on = car_system.handle_frame(image)
     interval = timer.end()
     if light_on and not lights:
         lights = True

@@ -1,6 +1,6 @@
+import numpy as np
 from cv2 import cv2
 from skimage import measure
-from skimage.measure import regionprops
 
 
 class CharSeg:
@@ -8,7 +8,7 @@ class CharSeg:
     Klasa odpowiedzialna za segmentację znaków na obrazie
     """
 
-    def __init__(self, character_dimensions, padding=2):
+    def __init__(self, character_dimensions, padding=0):
         """
         :param character_dimensions: wymiary znaku w postaci array'a [minh, maxh, minw, maxw]
         :param padding: wielkość marginesu dookoła wykrytego znaku w pikselach
@@ -23,52 +23,37 @@ class CharSeg:
         :return: lista krotek o postaci (img, [ymin, xmin, ymax, xmax]), gdzie img to dwuwymiarowy array
         """
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        gray = cv2.bilateralFilter(gray, 20, 17, 17)
-        canny = cv2.Canny(gray, 50, 200)
+        gauss = cv2.GaussianBlur(gray, (1, 1), 0)
 
-        labelled_image = measure.label(canny)
-        props = regionprops(labelled_image)
-        fixed_boxes = self._get_proper_boxes(props)
-        return self._prepare_boxes(gray, fixed_boxes)
+        thresh = cv2.threshold(gauss, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+        fixed_boxes = self._segment_plate(thresh, 8)
+        return self._prepare_boxes(thresh, fixed_boxes)
 
-    def _get_proper_boxes(self, props):
+    @staticmethod
+    def _segment_plate(image, segment_number):
         """
-        Metoda dokonuje korekcji na otrzymanych regionach
-        :param props: wynik metody regionprops
+        Metoda dokonuje segmentacji na regiony
+        :param image: obraz z tablicą rejestracyjną
+        :param segment_number: liczba segmentów, na które ma być podzielona tablica
         :return: lista krotek (y0, x0, y1, x1)
         """
-        global prev_region
-        props.sort(key=lambda x: x.centroid[1])
-        regions = []
+        i_w = image.shape[1]
+        i_h = image.shape[0]
+        min_h = int(i_h - (6 / 10) * i_h)
+        max_h = int(i_h - (4 / 10) * i_h)
+        offset = 0
+        seg_w = int(round(i_w / segment_number, 0))
         boxes = []
-        w_sum = 0
-        for region in props:
-            y0, x0, y1, x1 = region.bbox
-            if self._is_valid_region(region.bbox):
-                w_sum = w_sum + (x1 - x0)
-                regions.append(region)
-        avg_w = 0 if len(regions) == 0 else w_sum / len(regions)
-        prev_x = -1
-        for i in range(0, len(regions)):
-            region = regions[i]
-            y0, x0, y1, x1 = region.bbox
-            if prev_x != -1:
-                dist = region.centroid[1] - prev_x
-                if dist > avg_w * 2:
-                    py0, px0, py1, px1 = prev_region.bbox
-                    fx0 = (x0 + px0) / 2
-                    fy0 = (y0 + py0) / 2
-                    fx1 = (x1 + px1) / 2
-                    fy1 = (y1 + py1) / 2
-                    new_bbox = int(fy0), int(fx0), int(fy1), int(fx1)
-                    boxes.append(new_bbox)
-                if dist > 5:
-                    boxes.append(region.bbox)
-            else:
-                boxes.append(region.bbox)
-            prev_x = region.centroid[1]
-            prev_region = region
+        for i in range(0, segment_number):
+            pixel_min = 1
 
+            if offset + seg_w * i + seg_w < i_w - 1:
+                pixel_min = np.min(image[min_h:max_h, offset + seg_w * i + seg_w])
+            while offset + seg_w * i + seg_w < i_w - 1 and pixel_min <= 0:
+                offset = offset + 1
+                pixel_min = np.min(image[min_h:max_h, offset + seg_w * i + seg_w])
+            if offset + seg_w * i + seg_w < i_w - 1:
+                boxes.append((0, offset + seg_w * i, i_h - 1, offset + seg_w * i + seg_w))
         return boxes
 
     def _prepare_boxes(self, image, boxes):
@@ -85,9 +70,17 @@ class CharSeg:
                 y1 = y1 + self.padding if y1 + self.padding < image.shape[0] else image.shape[0] - 1
                 x0 = x0 - self.padding if x0 - self.padding > 0 else 0
                 x1 = x1 + self.padding if x1 + self.padding < image.shape[1] else image.shape[1] - 1
-                segment = image[y0:y1, x0:x1], bbox
+                roi = image[y0:y1, x0:x1]
+                labels = measure.label(roi, background=255)
+                props = list(filter(lambda x: self._is_valid_region(x.bbox), measure.regionprops(labels)))
+                by0, bx0, by1, bx1 = (0, 0, y1 - y0, x1 - x0)
+                if props.__len__() > 0:
+                    biggest = max(props, key=lambda x: x.filled_area)
+                    by0, bx0, by1, bx1 = biggest.bbox
+
+                segment = (roi[by0:by1, bx0:bx1], (y0 + by0, x0 + bx0, y0 + by1, x0 + bx1))
                 segments.append(segment)
-        segments.sort(key=lambda x: x[1][1])
+                segments.sort(key=lambda x: x[1][1])
         return segments
 
     def _is_valid_region(self, bbox):
@@ -100,4 +93,5 @@ class CharSeg:
         region_height = y1 - y0
         region_width = x1 - x0
         min_height, max_height, min_width, max_width = self.character_dimensions
-        return min_height <= region_height <= max_height and min_width <= region_width <= max_width
+        return min_height <= region_height <= max_height and min_width <= region_width <= max_width \
+               and region_width < region_height

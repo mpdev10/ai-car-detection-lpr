@@ -45,7 +45,7 @@ class LPR:
         for candidate in candidates:
             plate_img, _ = candidate
             segments = self.char_seg.segment_image(plate_img)
-            if 9 > len(segments) > 6:
+            if len(segments) > 0:
                 chars = ""
                 for i in range(len(segments)):
                     segment = segments[i]

@@ -43,7 +43,7 @@ dataset = CharDataset(root='dataset', label_file='labels.txt', multiply=0)
 s_dict = torch.load('models/cnn.ckpt', map_location=lambda storage, loc: storage)
 cnn = CNN(num_classes=36)
 cnn.load_state_dict(s_dict)
-char_seg: CharSeg = CharSeg((15, 40, 7, 20), padding=1)
+char_seg: CharSeg = CharSeg((6, 80, 6, 60), padding=0)
 lpr = LPR(char_seg, plate_detector, cnn, dataset)
 
 frame_skip = 0

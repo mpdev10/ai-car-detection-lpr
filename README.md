@@ -1,8 +1,9 @@
 # ai-project
 
-Assignment project for Artificial Intelligence lab.
-Code is written in python 3.7, using mostly NumPy, PyTorch and OpenCV.
-For object detection, I used Single Shot MultiBox Detector (SSD) based on MobileNetV1. Character recognition - CNN.
+Assignment project for Artificial Intelligence lab.  
+Code is written in python 3.7, using mostly NumPy, PyTorch and OpenCV.  
+For object detection, I used Single Shot MultiBox Detector (SSD) based on MobileNetV1. Character recognition - CNN.  
+To see whole documentation, written in Polish, click [here](./SI-dokumentacja.pdf).
 
 ## Functionalities
 

@@ -1,4 +1,4 @@
-# ai-project
+# ai-car-detection-lpr
 
 Assignment project for Artificial Intelligence lab.  
 Code is written in python 3.7, using mostly NumPy, PyTorch and OpenCV.  
